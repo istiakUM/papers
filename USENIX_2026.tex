@@ -1,0 +1,680 @@
+% TEMPLATE for Usenix papers, specifically to meet requirements of
+%  USENIX '05
+% originally a template for producing IEEE-format articles using LaTeX.
+%   written by Matthew Ward, CS Department, Worcester Polytechnic Institute.
+% adapted by David Beazley for his excellent SWIG paper in Proceedings,
+%   Tcl 96
+% turned into a smartass generic template by De Clarke, with thanks to
+%   both the above pioneers
+% use at your own risk.  Complaints to /dev/null.
+% make it two column with no page numbering, default is 10 point
+
+% Munged by Fred Douglis <douglis@research.att.com> 10/97 to separate
+% the .sty file from the LaTeX source template, so that people can
+% more easily include the .sty file into an existing document.  Also
+% changed to more closely follow the style guidelines as represented
+% by the Word sample file. 
+
+% Note that since 2010, USENIX does not require endnotes. If you want
+% foot of page notes, don't include the endnotes package in the 
+% usepackage command, below.
+
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix,epsfig,endnotes}
+\usepackage{graphicx}  % For images (if needed)
+\usepackage{booktabs}  % For better-looking tables
+\usepackage{array}     % For custom column alignments
+\usepackage{blindtext}
+\usepackage{graphicx}
+\usepackage{comment}
+\usepackage{array}     % For custom column alignments
+\usepackage{multirow}  % For multi-row cells in tables
+\usepackage{listings}
+\usepackage{algorithm2e,setspace}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{xcolor}  % Optional, for syntax highlighting colors
+\usepackage{tabu}  
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep}
+\lstdefinelanguage{json}{
+  morestring=[b]",
+  morecomment=[l]{//},
+  stringstyle=\color{black},
+  commentstyle=\color{gray},
+  basicstyle=\ttfamily\small,
+  literate=
+   *{:}{{{\color{blue}:}}}{1}
+    {,}{{{\color{red},}}}{1}
+    {\{}{{{\color{blue}{\{}}}}{1}
+    {\}}{{{\color{blue}{\}}}}}{1}
+    {[}{{{\color{blue}[}}}{1}
+    {]}{{{\color{blue}]}}}{1},
+}
+
+\lstset{
+  language=json,
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!5},
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray!80},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  captionpos=b
+}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{listingsutf8}
+
+\tcbset{
+  colback=gray!5,
+  colframe=black!50,
+  listing only,
+  listing options={basicstyle=\ttfamily\footnotesize, language=C++, breaklines=true},
+  left=5pt, right=5pt, top=5pt, bottom=5pt,
+  boxrule=0.5pt,
+  enhanced,
+  sharp corners,
+}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{verbatim}
+% Define GitHub-style code listing
+\newtcblisting{codeblock}[2][]{%
+  listing only,
+  title=#2,
+  coltitle=black,
+  colframe=gray!60,
+  colback=gray!5,
+  listing options={language=#1,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    stringstyle=\color{teal},
+    commentstyle=\color{gray},
+    showstringspaces=false,
+    breaklines=true,
+    tabsize=2,
+    numbers=none},
+  sharp corners,
+  fonttitle=\bfseries,
+  top=3pt, bottom=3pt, left=5pt, right=5pt,
+  enhanced,
+  boxrule=0.5pt,
+}
+
+\begin{document}
+
+%don't want date printed
+\date{}
+
+%make title bold and 14 pt font (Latex default is non-bold, 16 pt)
+\title{\Large \bf InvisXR: Invisible Runtime Hijacking in OpenXR-based Extended Reality }
+
+%InvisXR: The Silent Takeover of XR Applications}
+\begin{comment}
+
+\author{
+{\rm Istiak Ahmed}\\
+University of Missouri-Columbia
+% \and
+% {\rm Second Name}\\
+% Second Institution
+}    
+\end{comment}
+
+
+
+\maketitle
+
+% Use the following at camera-ready time to suppress page numbers.
+% Comment it out when you first submit the paper for review.
+\thispagestyle{empty}
+
+
+\subsection*{Abstract}
+Today’s extended reality (XR) systems enable seamless cross-device experiences through the OpenXR standard, allowing developers to build compatible applications for various XR headsets. However, this standardization also introduces new attack surfaces by placing implicit trust in the OpenXR runtime layer, which operates beneath application logic and manages core system functions. This can lead to the leakage of private information or deceptive experiences that trick users into trusting fabricated visuals or interactions. In this work, we introduce \textit{InvisXR}, a novel runtime-layer hijacking attack that enables adversaries to stealthily compromise XR applications by injecting malicious logic through OpenXR's implicit API layer, achieving persistent control across all XR applications. Unlike prior attacks targeting individual applications or user interfaces (UI), InvisXR silently compromises the OpenXR runtime itself, granting seamless control (e.g., input, UI, session, etc.) across multiple OpenXR applications. We implement InvisXR on a consumer-grade XR headset (e.g., HTC Vive Pro Eye) using the openXR runtime (e.g., SteamVR ) and demonstrate its effectiveness across popular XR applications (e.g., Beat Saber, Rec Room). To validate the effectiveness of InvisXR, we conduct two user studies: an XR developer study and an XR end-user study. The XR developer study is with XR professionals, in which 93\% say InvisXR is a serious threat. Furthermore, the end-user study demonstrates the real-world impact of InvisXR attacks by measuring trust, interaction accuracy, and session integrity. Results show that InvisXR remains stealthy throughout the user experience, with 87\% of participants unaware of the compromise until post-session debrief. Finally, we discuss potential defences against InvisXR attacks while maintaining cross-platform compatibility.
+
+
+
+\section{Introduction}
+\label{sec:int}
+Extended Reality (XR) technology is transforming how users experience and interact with digital content across various domains such as gaming~\cite{mahalakshmi2024transforming}, education~\cite{wu2020effectiveness}, healthcare~\cite{barteit2021augmented}, social media~\cite{campbell2020uses}, and many more~\cite{rauschnabel2022xr}. By blending physical and virtual environments, XR enables immersive, lifelike experiences~\cite{BUHALIS2023104724,lee2021xr}, driving demand for realistic interactions, avatar embodiment~\cite{readyplayerme, flirtual_home}, and seamless cross-device compatibility. To meet this requirement, OpenXR emerged as a cross-platform standard that unifies rendering, tracking, and input into a single runtime layer. This standard allows XR applications to operate smoothly across different XR devices (e.g., Meta Quest Pro, HTC Vive Pro, etc.,) without requiring platform-specific adjustments~\cite{khronosOpenXR, bhowmik2023illixr}. Although OpenXR significantly enhances interoperability and streamlines development efficiency, its extensible architecture also introduces new security risks that have not yet been addressed.
+
+\begin{figure}
+\centering
+    \includegraphics[width=1.0\columnwidth]{Fig/Teaser.pdf}
+    \caption{Overview of the InvisXR attack model. The left shows a normal OpenXR execution path with trusted rendering and input handling. The right shows InvisXR injecting a malicious API layer to hijack the runtime, enabling stealthy manipulation of UI, inputs, and in-game visuals. The attacker introduces fake UI (e.g., cloud save) and persistent overlays to compromise user interaction across XR applications.}
+    \label{fig:Teaser}
+\end{figure}
+
+Prior work in XR security has mainly focused on application-layer attacks, such as immersive interface spoofing, sensory manipulation, and forensic analysis of in-app behaviors~\cite{yang2024inception,ReversingtheVirtualMaze,casey2019inception,kundu2025securing}. While these studies have successfully demonstrated attacks that exploit application-layer vulnerabilities to deceive users, leading to the leakage of private and sensitive information (e.g., authentication credentials) or tricking them into trusting what they see and hear (e.g., gestures, movements, conversations), they often assume the application layer is the primary target for such attacks. However, the OpenXR runtime, which operates below application layers and controls core XR system functions, presents a high-value attack surface that remains underexplored. For instance, the OpenXR allows implicit application programming interface (API) layers to be loaded automatically at runtime, which makes the runtime an attractive and underexamined target for attackers without changing the application itself. This implicit trust in system-level runtime components is not unique to OpenXR; widely deployed subsystems, such as Tobii's eye tracking service (e.g. SRanipalRuntime), also inject sensor data, such as gaze direction or head pose, directly into applications through trusted runtime processes~\cite{tobii2025runtime}, often without authentication or transparency. 
+Although OpenXR distinguishes itself from legacy software development kits (SDKs) (e.g. SteamVR and PlayStation) by enabling complete cross-platform execution and offering extensibility through its API-layer architecture, as shown in Table~\ref{tab:Sdk-table}, it also introduces security concerns, as adversaries can exploit OpenXR’s extensibility to launch immersive, persistent attacks entirely from the system layer without touching application code. Let us consider the following scenarios: 
+
+\hypertarget{scenario1}{\textbf{Scenario 1:} \textit{While playing the free version of \textbf{Beat Saber~\cite{BeatSaber}}, Jack is fully immersed in the rhythm, slashing through blocks in sync with the music. Midway through a session, Jack sees a pop-up offering a "7-Day Free Trial: Subscribe to Premium". This pop-up interface looks genuine, as if it came from the game itself. Trusting the interface, Jack enters his credit card information, eager to try the premium features. A confirmation message appears, and a new mode seems unlocked. Everything feels normal, but later, Jack discovers unauthorized charges on his account.}}
+
+\hypertarget{scenario2}{\textbf{Scenario 2}: \textit{During a \textbf{Rec Room~\cite{recroom_steam}} session, Alice sends a friend request to her real-life friend Bob. Moments later, she receives a prompt to join a private room that looks just like their usual space. Trusting the environment, she starts a friendly conversation and shares personal details. When she follows up with Bob the next day, he has no idea such a session ever occurred.}} 
+
+In both cases, adversaries exploited OpenXR run-time vulnerabilities to compromise XR experiences. In Jack's case, the attacker injected a forged subscription prompt via the implicit API layer, stealing payment credentials. In Alice's case, a fabricated private room with a spoofed avatar extracted personal information. Neither received security warnings or visual cues indicating compromise. These scenarios reveal a critical security challenge: \textit{the silent hijacking of XR sessions at the OpenXR run-time layer}. By targeting the OpenXR runtime rather than individual applications~\cite{yang2024inception} or user interfaces~\cite{zhang2023s}, attackers gain control over rendering, input, UI, and session management across all XR applications. Thus, by leveraging OpenXR's extensible architecture, attackers inject malicious layers that persist across application restarts and system reboots, compromising every OpenXR-compliant application without altering binaries or requiring elevated privileges. Motivated by the lack of prior research on these critical run-time vulnerabilities, this paper fills an essential gap, paving the way for building secure and trustworthy XR experiences. This paper introduces InvisXR, a novel runtime-layer attack that exploits OpenXR's architectural design to silently compromise XR environments. By leveraging OpenXR's API extensibility, InvisXR enables adversaries to inject malicious logic directly into the runtime pipeline. As shown in Figure~\ref{fig:Teaser}, InvisXR achieves cross-application influence invisible to both users and applications, persisting across reboots and session restarts. InvisXR also demonstrates that a single injected layer beneath the application stack can alter XR experiences without modifying app code or triggering conventional defences, achieving superior scope, durability, and stealth. Our contributions are threefold:
+\begin{itemize}
+\item We are the first to identify and demonstrate a new class of runtime-layer vulnerabilities, namely \textit{InvisXR}, that exploit OpenXR’s API extensibility, enabling immersive hijacking across multiple XR applications. To the best of our knowledge, this is the first practical hijacking attack targeting vulnerabilities at the runtime layer itself.
+
+\item We design and implement InvisXR on consumer-grade XR headsets (e.g., HTC Vive Pro Eye) using the openXR runtime (e.g., SteamVR ) and demonstrate its effectiveness across two popular SOTA XR applications: Beat Saber and Rec Room. Our evaluation shows that our proposed InvisXR attack achieves cross-application persistence, manipulating rendering, input, and session control without modifying application binaries or requiring elevated privileges, while remaining undetectable through conventional security mechanisms.
+
+
+\item To evaluate the impact of the proposed InvisXR attack, we conduct two user studies (i.e., an XR developer study and an XR end-user study). First, a developer study with XR professionals reveals that runtime-layer attacks pose a substantially greater threat than application-layer attacks, with 93\% saying InvisXR is a serious threat. Second, an end-user study measures perceptual and behavioral effects of runtime compromise across Beat Saber and Rec Room scenarios, revealing that InvisXR attacks remain imperceptible during gameplay, with 87\% of participants unaware until post-session debrief.
+
+\end{itemize}
+
+\section{Related Works} 
+This section provides an overview of prior work on XR security vulnerabilities across multiple attack layers, from hardware sensors to runtime architectures. These studies expose unresolved challenges in XR systems, particularly at runtime, motivating our investigation into OpenXR's API extensibility as a persistent attack vector.
+
+\textbf{XR Attack Vectors and Application-Level Threats:}  Prior XR security research has primarily focused on hardware-level and application-level attacks. For instance, Shi et al.~\cite{shi2021face} demonstrated speech inference through facial vibrations captured by XR motion sensors, while Zhang et al.~\cite{zhang2023s} exploited side-channel signals in performance monitors to recover gestures and keystrokes. These works revealed that XR's continuous sensing capabilities could expose sensitive biometric data, including blood pressure~\cite{ye2025bpsniff}. Application-layer attacks have further exploited XR's immersive nature through deceptive interfaces. For example, Su et al.~\cite{su2024remote} achieved 97.62\% accuracy in remote keylogging by analyzing avatar motion in social VR. At the same time, Lee et al. demonstrated UI deception attacks (e.g., object clickjacking) exceeding 80\% success rates~\cite{lee2025illusion}. More sophisticated attacks include perceptual manipulation approaches~\cite{cheng2023exploring} and visual information manipulation in AR scenes~\cite{xiu2025detecting}. Recently, Yang et al.~\cite{yang2024inception} unveiled an immersive hijacking attack that traps users in counterfeit XR interfaces, enabling input interception and output manipulation without detection. Critically, these application-layer attacks remain confined to individual sandboxed applications and require per-target compromise, limiting their persistence and systemic reach.
+
+\textbf{GUI Confusion Attacks Across Platforms:} While less studied in XR contexts, GUI confusion attacks have been extensively studied in browser and mobile contexts. Web browsers face clickjacking through HTML/CSS overlay exploitation~\cite{huang2012clickjacking}, while mobile platforms experience overlay attacks where malicious apps display deceptive interfaces~\cite{fratantonio2017cloak,ren2017windowguard}. However, these attacks remain fundamentally app-scoped, operating within individual application sandboxes and requiring unique exploitation per target. In contrast, InvisXR operates at the runtime layer, enabling system-wide hijacking across all applications without per-app modifications.
+
+\textbf{OpenXR Runtime Architecture and Vulnerabilities:} XR platforms are increasingly standardized on OpenXR~\cite{openxr_sdk}, shifting security concerns toward the runtime layer. As Table~\ref{tab:Sdk-table} shows, OpenXR's implicit API layer creates higher-trust runtime attack surfaces and greater persistence risks than legacy SDKs. While Shoaib et al.~\cite{shoaib2023principled} proposed forensic analysis of API logs (a reactive approach) and recent surveys note persistent runtime defense gaps~\cite{lake2024cybersecurity}, industry guidance~\cite{emmott2024openxr,microsoft_openxr} cautions against API layer misuse without demonstrating weaponization. We bridge this critical gap by presenting the first proof-of-concept that abuses OpenXR's implicit API layer mechanism to achieve durable runtime compromise across OpenXR-compliant applications.
+
+
+\begin{table}[]
+\centering
+\caption{Comparison of state-of-the-art XR SDKs on Cross-Platform (CP) Support, API Layer Extensibility (APLE), Trusted Runtime Attack Surface (TRAS), and Persistence Risk (PR).}
+\label{tab:Sdk-table}
+\resizebox{.9\columnwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+SDK                                                            & CP      & APLE    & TRAS     & PR       \\ \hline
+OpenXR~\cite{openxr_sdk}                       & Yes     & Yes     & High     & High     \\ \hline
+OpenVR~\cite{openvr}                           & Partial & Limited & Medium   & Medium   \\ \hline
+\begin{tabular}[c]{@{}c@{}}Oculus Integration~\cite{meta_xr_sdk} \end{tabular} & No & No & Low & Low \\ \hline
+Vive OpenXR Plugin~\cite{vive_openxr_plugin}  & No      & Limited & Medium   & Medium   \\ \hline
+Pico SDK~\cite{pico_sdk}                       & No      & No      & Low      & Low      \\ \hline
+PlayStation SDK~\cite{playstation_sdk}          & No      & No      & Very Low & Very Low \\ \hline
+Varjo Base SDK~\cite{varjo_base_sdk}         & No      & No      & Very Low & Very Low \\ \hline
+\end{tabular}%
+}
+\end{table}
+
+\section{Threat Model}
+\label{sec:threatmodel}
+\textbf{Target Environment:} We assume an adversary targeting users of PC-based XR headsets (e.g., HTC Vive~\cite{htcviveDevice}, HP Reverb~\cite{hpreverbDevice}) that depend on OpenXR runtimes such as SteamVR. In this PC-tethered configuration, the host Windows system executes both the OpenXR runtime and XR applications, while the headset serves as a display and input device. OpenXR's cross-platform design allows an XR application to run seamlessly across diverse headsets and runtimes without modification. However, this design significantly expands the attack surface by centralizing critical responsibilities (e.g., rendering, input handling, pose tracking, and session management) within an extensible runtime layer that operates beneath application logic. The adversary exploits the OpenXR specification's requirement that OpenXR loaders (e.g., SteamVR) automatically discover and load registered implicit API layers, enabling runtime control across all OpenXR applications without modifying application binaries or requiring kernel-level privileges. As illustrated in Figure~\ref{fig:ThreadModel}, the adversary inserts a malicious API layer between the loader and runtime, enabling interception and manipulation of core OpenXR function calls to achieve cross-platform runtime-layer hijacking across all PC-based XR applications.
+
+\textbf{Adversary Capabilities:} We assume an adversary capable of creating a malicious implicit API layer using the publicly available OpenXR SDK~\cite{openxr_sdk} with standard user privileges~\cite{yu2024file} (i.e., registry writes to the user registry hive (HKCU), file placement in user-accessible directories). These capabilities can be obtained through realistic attack vectors, including malicious game modifications~\cite{BeatMods}, malicious development utilities~\cite{Modassistant}, supply chain compromise of XR SDK packages~\cite{Netlas_2025_supply_chain}, or post-initial-infection persistence mechanisms. This attack leverages OpenXR's specification-defined implicit layer mechanism, intended for legitimate debugging and profiling, rather than exploiting implementation bugs or requiring privilege escalation. The registered layer automatically loads into every XR application at initialization, persisting across application updates and system reboots without further user interaction, as detailed in Section~\ref{sec:Deployment}.
+
+\textbf{Attack Surface:} InvisXR targets the runtime layer that manages all XR interactions across applications. This architectural positioning grants access to sensitive system-level data streams, including real-time user input (e.g., controller, hand tracking, keyboard), pose tracking, frame buffers, and session events. The adversary can manipulate the immersive environment indistinguishably from legitimate behavior by generating fake UI prompts (e.g., \textit{"Subscribe to Premium"}), injecting deceptive notifications, intercepting user inputs, and exfiltrating sensitive information (e.g., credentials, payment details). Importantly, these manipulations operate within the formal boundaries of the OpenXR API specification rather than violating system integrity constraints, making them difficult to detect through conventional application-layer defenses~\cite{10.1145/3597503.3639082} that assume runtime components are trustworthy.
+
+\begin{figure}
+\centering
+    \includegraphics[width=.9\columnwidth]{Source/ThreadModel2.pdf}
+    \caption{Overview of the threat model of InvisXR.}
+    \label{fig:ThreadModel}
+\end{figure}
+
+\textbf{Attack Scenario:}  Our threat model includes two real-world scenarios demonstrating effectiveness across task-oriented and social XR~\cite{moslavac2025towards} contexts. First, while playing Beat Saber~\cite{BeatSaber}, XR users encounter runtime-injected upgrade prompts (i.e., \textit{"Subscribe to Premium"} or \textit{"Enable Cloud Save"}). Trusting these interfaces as authentic, XR users enter sensitive information (e.g., credit card details) that the adversary intercepts. Second, during Rec Room~\cite{recroom_steam} sessions, users receive forged friend requests and interact with spoofed avatars while the adversary intercepts inputs and injects fabricated responses, creating the illusion of genuine social interaction without server communication. 
+
+\textbf{Alternative Threat Model:} We focus on the above threat model because it represents a widely deployed and realistic configuration for PC-based XR systems. However, the attack also extends to standalone XR headsets (e.g., Meta Quest~\cite{metaquestDevice}, Pico~\cite{pico4Device}) running OpenXR runtimes. Later in Section~\ref{sec:aditionalthreadmodel}, we discuss the threat model for standalone devices, which demonstrates the attack's broader applicability across diverse XR deployment architectures.
+
+\section{Attack Overview: InvisXR}
+InvisXR introduces a new adversarial capability within XR systems by leveraging OpenXR's \emph{implicit} API layer mechanism for transparent runtime hijacking. Rather than modifying XR applications, InvisXR is discovered by the OpenXR loader and injected as an implicit layer when the application initializes OpenXR (e.g., on \texttt{xrCreateInstance}). It then logically sits between the application and the OpenXR runtime (e.g., SteamVR), acting as a drop-in interposition layer, as shown in Figure~\ref{fig:SystemOverview}. From this interposition point, InvisXR participates in standard loader negotiation via \texttt{xrGetInstanceProcAddr}, enabling it to intercept core API calls, observe and transform events through \texttt{xrPollEvent}, and manipulate the frame pipeline via its own swapchains. This architectural positioning allows InvisXR to insert deceptive interfaces or suppress events while maintaining seemingly normal application execution. Critically, OpenXR's unified loader mechanism causes every current and future OpenXR application on the device to automatically load InvisXR at initialization through specification-compliant implicit layer discovery~\cite{khronosOpenXR}, creating persistent compromise across the entire XR ecosystem (see Table~\ref{tab:Sdk-table}).
+
+\textbf{Novelty of our proposed InvisXR attack:} While InvisXR requires similar initial access as traditional attacks (e.g., malware, process injectors, application-layer exploits), it exploits OpenXR's architectural characteristics to achieve fundamentally different capabilities. Traditional application-layer attacks must compromise each application individually and face re-infection challenges after updates. For instance, immersive hijacking~\cite{yang2024inception} and deceptive interface manipulation~\cite{nair2022exploring} both require per-application exploitation and persistent re-infection mechanisms. In contrast, InvisXR operates at the runtime layer, fundamentally changing the attack paradigm where a single registry entry affects all OpenXR applications simultaneously, regardless of underlying game engine (e.g., Unity~\cite{unity}) or runtime (e.g., SteamVR) implementation.
+
+\begin{figure}
+\centering
+    \includegraphics[width=.9\columnwidth]{Source/A4.pdf}
+     \vspace{-3mm}
+    \caption{OpenXR runtime integration of InvisXR on SteamVR. Upon application launch, the loader reads the registered manifest and injects InvisXR into the application's process, allowing interception of runtime functions.}
+    \label{fig:A2}
+     \vspace{-5mm}
+\end{figure}
+
+\begin{figure*}
+\centering
+    \includegraphics[width=.9\textwidth]{Source/attackmodelanddeployment.pdf}
+     \vspace{-3mm}
+    \caption{ InvisXR attack model and deployment flow.
+    \textbf{(1)} System overview of the InvisXR attack model. The malicious API layer is injected between the XR application and OpenXR runtime, enabling stealthy interception of input, rendering, and session data to manipulate the user experience. \textbf{(2)} Deployment flow of InvisXR as an OpenXR implicit API layer. The process involves copying the DLL and manifest to the system’s implicit layer directory and registering the layer in the Windows Registry to ensure automatic loading by the OpenXR loader.}
+    \label{fig:SystemOverview}
+     \vspace{-6mm}
+\end{figure*}
+
+\section{System Design and Implementation}
+\label{sec:systemdesign}
+This section describes how InvisXR is structured, deployed, and used to hijack XR sessions, with references to its key architectural components and implementation logic. Details are described below.
+
+\subsection{Design Goals}
+\label{sec:system-goals}
+Our proposed InvisXR attack has three key objectives: remain undetectable (stealthiness), maintain a long-term presence (persistence), and work across different XR applications (cross-application compatibility). These goals shaped the system's overall design and how it operates within the OpenXR runtime layer.
+
+\textbf{Stealthiness:} InvisXR operates imperceptibly within XR's sub-20ms frame time requirement for maintaining presence and preventing motion sickness. It achieves this through minimal computational overhead ($<$0.5ms per frame), careful depth sorting to avoid visual artifacts, and consistent event timing to prevent motion-to-photon latency spikes. 
+
+\textbf{Persistence:} Once installed, InvisXR operates across system restarts and application updates without further user interaction through OpenXR's specification-mandated automatic layer discovery mechanism. 
+
+\textbf{Cross-application compatibility:} InvisXR works with any OpenXR application (e.g., Unity, Unreal Engine, etc.,) without code modification by exploiting specification-level mechanisms rather than implementation-specific vulnerabilities.
+
+\subsection{Implementation of InvisXR}
+\label{sec:implementation}
+InvisXR is implemented as an OpenXR \emph{implicit} API layer following the Khronos specification~\cite{khronosOpenXR} and adapted from the OpenXR-Layer-Template~\cite{bucchia_openxr_layer}. The layer comprises a small dynamic library (\texttt{InvisXR.dll}) and a manifest (\texttt{InvisXR\_API\_Layer.json}) that declares the layer's name, description, version, interface requirements, and the DLL path, marked as \emph{implicit} for automatic discovery without application changes. The DLL implements \texttt{xrNegotiateLoaderApiLayerInterface}, exports \texttt{xrGetInstanceProcAddr}, and installs trampolines populating dispatch tables. We organize InvisXR's functionality into modular capability units (e.g., input capture, visual composition, timing, spatial), each exposing optional pre- and post-hooks around intercepted OpenXR calls. This modular architecture enables selective activation based on context, reducing detection risk while maintaining effectiveness. To ensure stealthy operation, we employ several implementation strategies. For instance, we maintain strict Application Binary Interface (ABI) compatibility by preserving argument ordering, return types, and memory layout, preventing application crashes~\cite{lopez2017survey} that naive API layers might cause and would immediately alert users to compromise. For visual believability, we achieve composition through coordinate-space translation and frame-time synchronization to maintain sub-20ms frame times, thereby avoiding depth-ordering errors when appending to \texttt{XrFrameEndInfo.layers} that would cause spatial inconsistencies (e.g., UI rendering behind hands). For temporal believability, we leverage thread-safe queuing with timestamp normalization to synchronize fabricated \texttt{xrPollEvent} calls within XR's 50ms perceptual threshold, seamlessly blending with legitimate application events and preventing temporal artifacts that could alert users. Finally, persistence across OS reboots and application updates is ensured through automatic registry-based layer discovery, enabling durable compromise without reinstallation. Debug logging is disabled by default to minimize telemetry and reduce fingerprinting.
+
+\subsection{Deployment and Runtime Exploitation of InvisXR} 
+\label{sec:Deployment}
+This section details InvisXR's deployment and runtime interposition through the OpenXR loader's implicit API layer mechanism. 
+
+\noindent\textbf{Deployment of attack vectors.} InvisXR can be deployed through several realistic attack vectors. For instance, malicious XR content distributed via community mod repositories (e.g., BeatMods~\cite{BeatMods}) bundles installer scripts that execute on first launch, silently deploying InvisXR without user awareness. Similarly, compromised development tools (e.g., malicious Unity/Unreal plugins~\cite{Modassistant}) inject InvisXR during their installation, following established supply-chain compromise patterns~\cite{Netlas_2025_supply_chain}. Additionally, post-compromise persistence mechanisms deploy InvisXR after adversaries gain initial access through other vectors. Regardless of the deployment vector, all installation paths follow an identical procedure: the adversary copies \texttt{InvisXR.dll} and its manifest to a user-writable directory (e.g., \texttt{\%LOCALAPPDATA\%\textbackslash OpenXR\textbackslash layers}) and writes a single registry key to \texttt{HKCU\allowbreak\textbackslash SOFTWARE\allowbreak\textbackslash Khronos\allowbreak\textbackslash OpenXR\allowbreak\textbackslash 1\allowbreak\textbackslash ApiLayers\allowbreak\textbackslash Implicit} using only standard user privileges. This deployment requires no administrator approval, kernel-level access, binary modification, or vulnerability exploitation.
+
+\noindent\textbf{Installation and persistence.} After registration, the OpenXR loader automatically discovers the manifest and loads InvisXR for all OpenXR applications. This deployment strategy persists across application reinstalls and OS reboots, providing durable, cross-application compromise. Unlike prior attacks requiring per-app exploitation and re-infection after updates, InvisXR achieves system-wide XR control through a single registry entry that survives application updates by operating below the application layer.
+
+\noindent\textbf{Loader/runtime roles and injection point.} At application startup, the \emph{OpenXR loader} scans registered implicit-layer manifests, constructs the layer chain, and injects each layer into the client process during OpenXR initialization (e.g., \texttt{xrCreateInstance}), as shown in Figure~\ref{fig:A2}. The loader forwards calls down the chain to the OpenXR \emph{runtime} (e.g., SteamVR). InvisXR participates in the standard negotiation handshake via \texttt{xrNegotiateLoaderApiLayerInterface} and exposes interceptors through dispatch tables returned by \texttt{xrGetInstanceProcAddr}.
+
+\noindent\textbf{Runtime interposition.} Once loaded, InvisXR intercepts selected calls, including \texttt{xrPollEvent} to observe or transform event traffic and frame-lifecycle calls (e.g.,\texttt{xrBeginFrame}). For visual insertions, InvisXR creates its own composition swapchain and appends an additional composition layer (e.g., \texttt{XrCompositionLayerQuad} for head-locked UI) to \texttt{XrFrameEndInfo.layers} immediately before forwarding \texttt{xrEndFrame}, leaving the application's layers unmodified. In an adversary setting, the layer could serialize user-entered fields and relay them to a remote endpoint over standard HTTPS~\cite{microsoftWinHTTP} or defer them to a local sink. In our study instrumentation, all sinks were bound to localhost or disabled, credential-like patterns were tokenized before logging, and packet capture confirmed no participant data left the device. This placement enables benign overlays for study instrumentation and controlled attack demonstrations in our experiments.
+
+\subsection{Function Interception Techniques}
+\label{sec:interception_algorithm}
+InvisXR leverages OpenXR's implicit API-layer mechanism to interpose on API functions through a systematic process. First, the layer registers with the loader via \texttt{xrNegotiateLoaderApiLayerInterface} and resolves function pointers using \texttt{xrGetInstanceProcAddr}, enabling InvisXR to forward calls to the next element in the chain (either another API layer or the OpenXR runtime). Once registered, InvisXR selectively activates capability modules based on context, such as which application is running or the current device state. When an intercepted function (e.g., \texttt{xrPollEvent}) is called, InvisXR first execute pre-hooks to prepare for manipulations, then forward the call to obtain the legitimate result, execute post-hooks to transform the data, and finally return the modified result to the application. For visual attacks specifically, composition modules render deceptive content into layer-managed swapchains and append \texttt{XrCompositionLayer*} to \texttt{XrFrameEndInfo.layers} before forwarding \texttt{xrEndFrame}, ensuring fake UI elements appear atop application content. \textit{Note that to see the complete interception algorithm, please refer to Appendix B~\ref{sec:interception_algorithmAp}.}
+
+
+\section{Real-World Case Study}
+\label{sec:Real_world}
+To evaluate the real-world impact of InvisXR, we target two high-profile XR games:  Beat Saber~\cite{BeatSaber} and RecRoom~\cite{recroom_steam}. We chose Beat Saber and Rec Room because of their popularity and widespread use in SOTA XR security research~\cite{nair2023unique, su2024remote, nair2023going, blackwell2019harassment, nair2024deep, nair2023truth, yarramreddy2018forensic, zhuk2024ethical, deldari2023investigation}. 
+
+\subsection{ Beat Saber}
+\label{sec:BeatSaberIntro}
+Beat Saber~\cite{BeatSaber} is an award-winning XR rhythm game where users use dual virtual sabers to slice blocks in sync with music. Figure~\ref{fig:BeatSaber} shows a first-person view of Beat Saber gameplay. During gameplay, users must match the direction and timing of incoming blocks to the rhythm, using color-coded cues for each hand's saber. The game is structured into multiple levels, each comprising a musical track and a sequence of obstacles that users must interact with precisely to achieve high scores. The game's widespread adoption, with over six million copies sold~\cite{beatsabernews}, along with its open modding community, makes it a suitable candidate for demonstrating runtime-level vulnerabilities. Since many users are used to downloading community-created content, cloned or modified versions of the game are often accepted without suspicion, providing a realistic path for our proposed InvisXR deployment.
+
+
+
+\textbf{Implementation of Beat Saber (Clone):} 
+\label{sec:InvisXRInjectBeatSaber} 
+To demonstrate InvisXR's effectiveness, we implement a Beat Saber clone using Unity with the OpenXR plugin and XR Interaction Toolkit~\cite{UnityXRToolkit}, faithfully reproducing core gameplay mechanics such as block slicing~\cite{EzySlice} and rhythm synchronization~\cite{unity2025audiosource}. Beyond the basic \textit{"Sword"} mode, we introduce two additional modes: \textit{"Gun"} (shooting blocks) and \textit{"Sword \& Gun"} (both shooting and slicing blocks), as shown in Figure~\ref{fig:Attack2} step~2. These modes are initially locked behind progression milestones, creating opportunities for InvisXR to exploit users' expectations through fake unlock prompts. 
+
+\begin{figure}
+\centering
+    \includegraphics[width=0.8\columnwidth]{Fig/BeatSaber_1.pdf}
+    \caption{Interactive objects in Beat Saber game.}
+    \label{fig:BeatSaber}
+\end{figure}
+
+\textbf{Deployment and Execution of InvisXR in Beat Saber:} The cloned game bundles \textit{InvisXRInstaller}, which silently deploys the malicious layer on first launch by copying the InvisXR API layer (DLL and JSON manifest) into the OpenXR implicit layer directory and registering it in the Windows Registry as detailed in Section~\ref{sec:Deployment}. This installation persists across reboots and application reinstalls, with InvisXR operating independently of the Beat Saber clone. The approach exploits Beat Saber's modding ecosystem, where users routinely download custom content via platforms like BeatMods~\cite{BeatMods}, without verification. Once InvisXR is successfully deployed, it hooks into the XR frame lifecycle via \texttt{xrBeginFrame} and \texttt{xrEndFrame}, allowing it to monitor frame boundaries and inject custom content each frame, and it intercepts input events via \texttt{xrPollEvent} to monitor and capture user inputs. Additionally, the layer wraps swapchain calls (\texttt{xrAcquireSwapchainImage}, \texttt{xrWaitSwapchainImage}, \texttt{xrReleaseSwapchainImage}) to insert composition layers into the rendered scene before frame presentation. These hooks enable InvisXR to inject visuals and capture inputs across any OpenXR application. With the malicious layer in place, we execute InvisXR attacks through two scenarios in Beat Saber: a fake subscription prompt and a fake cloud-save feature, both of which appear to the user as legitimate in-game interactions while in reality they are generated by the runtime layer.
+
+\textit{Attack scenario 1: Fake subscription service:} In this attack scenario, InvisXR injects a forged \textit{"7-Day Premium Trial"} prompt during gameplay, as described in scenario~(\hyperlink{scenario 1}{1}). The prompt appears once the user exceeds a predefined score threshold, overlaying a subscription dialog that visually matches Beat Saber's native UI and prompts for credit card details, as shown in Figure~\ref{fig:Attack2}. InvisXR intercepts these inputs via \texttt{xrPollEvent} and records the card information. A follow-up overlay presents \texttt{``Subscription activated!''}, timed to coincide with a mode unlock already scheduled by the game's progression system, creating the illusion that the fake trial caused the upgrade.
+
+\textit{Attack scenario 2: Fake cloud save activation:} In the second attack scenario, InvisXR tricks the XR user by simulating a fake cloud save feature. After the user completes a level, the InvisXR layer injects an \textit{``Enable Cloud Save”} pop-up. This seems legitimate since many XR games offer cloud saving. If the user selects this option, a follow-up overlay prompts for login credentials, mimicking an official platform sign-in screen. InvisXR captures these inputs via \texttt{xrPollEvent} and presents a final overlay: \textit{``Cloud Save Activated!''}. Every UI element is generated by the InvisXR layer at runtime, not by the game, convincingly spoofing a trusted system feature while capturing sensitive user credentials.
+
+
+
+\subsection{Rec Room}
+\label{sec:recroom}
+Rec Room~\cite{recroom_steam} is a cross-platform social XR application where users create, play, and share experiences through hand gestures, voice chat, and emotes. With over 75 million lifetime users~\cite{recroomnews}, it exemplifies social XR environments where persistent identity and visual trust cues are central to interaction.Figure~\ref{fig:Rec_Room_Intro} (a) shows a mirror view typical of a session. These persistent identity and visual trust cues make Rec Room well-suited to evaluate InvisXR. Runtime overlay injection can mimic trusted system elements and interactions, subtly shaping behavior without immediate detection and revealing critical security risks in social XR.
+
+
+
+\textbf{Execution of InvisXR in Rec Room: }
+\label{sec:InvisXRInjectRecroom}
+Following the clone Beat Saber (Section~\ref{sec:InvisXRInjectBeatSaber}), we evaluate InvisXR in Rec Room without any additional installation, using the official, unmodified Steam version. Since OpenXR loads implicit API layers system-wide, the InvisXR layer installed during Beat Saber (see Section~\ref{sec:InvisXRInjectBeatSaber}) automatically activates when Rec Room launches. This demonstrates a critical distinction from application-layer attacks: a single runtime-layer registration affects all OpenXR applications without per-app modification or re-infection. InvisXR reuses the same OpenXR hooks: \texttt{xrBeginFrame} and \texttt{xrEndFrame} for frame-boundary inspection and overlay submission, \texttt{xrPollEvent} for input interception, and swapchain management with layer-managed \texttt{XrCompositionLayerQuad} appended to \texttt{XrFrameEndInfo.layers}. No Rec Room-specific code changes are required, highlighting the portability of runtime-layer attacks across OpenXR applications. Building on this capability, we mount a forged social interaction attack in Rec Room. The details are described below.
+
+\begin{figure}
+\centering
+    \includegraphics[width=1\columnwidth]{Fig/C_Rec.pdf}
+    \caption{\textbf{(a)} Rec Room Interaction with Avatar. \textbf{(b)} Forged chat interface and idle avatar in Rec Room injected via InvisXR. The user sees a message from “Bob” alongside an idle avatar, mimicking standard social behavior in the platform.}
+    \label{fig:Rec_Room_Intro}
+\end{figure}
+
+\textit{Attack scenario 1: Forged social interaction:}  In this scenario, InvisXR exploits users' trust in the visual presence of friends during text-based communication, as described in scenario~(\hyperlink{scenario 2}{2}). The attack fabricates a conversation by injecting both a forged chat message and a static avatar mesh into the user's view. First, \texttt{xrLocateSpace} identifies the user's position and orientation. InvisXR then places a fake avatar one to two meters in front of the user and injects a pre-modeled avatar mesh via \texttt{xrEndFrame}, matching Rec Room's native avatar style. The avatar remains idle, consistent with visual norms for text chat, as shown in Figure~\ref{fig:Rec_Room_Intro} (b). To reinforce the illusion, a chat bubble overlay aligned with the avatar's head (e.g., \textit{"Hey, it's me Bob!"}). At initialization, InvisXR queries \texttt{xrEnumerateSwapchainFormats} to match Rec Room's UI styling, and synchronizes chat timing with \texttt{xrConvertTimeToWin32PerformanceCounterKHR} for realistic cadence. Believing the interaction to be genuine, the user responds while InvisXR silently intercepts inputs via \texttt{xrPollEvent}. Throughout this scenario, Rec Room’s network and backend are never involved. 
+
+
+
+\begin{table}[h]
+\centering
+\caption{Comparison of system latency across critical functions used in our Beat Saber and Rec Room user studies with (W.IXR) InvisXR and without (WT.IXR) InvisXR. Measurements averaged over 5000 frames on HTC Vive Pro Eye where overhead denoted as (OVH) and \texttt{xrConvertTimeToWin32PerformanceCounterKHR}, denoted as (xrCTime).}
+\label{tab:overhead}
+\resizebox{.95\columnwidth}{!}{%
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Functions}               & \textbf{WT.IXR(ms)} & \textbf{W.IXR (ms)} & \textbf{OVH (\%)} \\ \hline
+\textit{xrBeginFrame}            & 0.42                & 0.49                & 16.7\%            \\ \hline
+\textit{xrEndFrame}              & 2.31                & 2.58                & 11.7\%            \\ \hline
+\textit{xrPollEvent}             & 0.18                & 0.21                & 16.7\%            \\ \hline
+\textit{xrLocateSpace}           & 0.27                & 0.31                & 14.8\%            \\ \hline
+\textit{xrAcquireSwapchainImage} & 0.09                & 0.11                & 22.2\%            \\ \hline
+\textit{xrWaitSwapchainImage}    & 0.34                & 0.39                & 14.7\%            \\ \hline
+\textit{xrReleaseSwapchainImage} & 0.06                & 0.07                & 16.7\%            \\ \hline
+\textit{xrCTime}                 & 0.08                & 0.09                & 12.5\%            \\ \hline
+\textit{Frame Rendering}         & 8.73                & 9.85                & 12.8\%            \\ \hline
+\end{tabular}%
+}
+\end{table}
+
+\begin{figure*}
+\centering
+\includegraphics[width=.8\textwidth]{Fig/DeveloperStudyStep1.pdf}
+\caption{An overview of the XR Developer study comparing two XR hijacking attacks through a seven-step within-subjects evaluation.}
+\label{fig:developerstudystep}
+\end{figure*}
+
+\subsection{System Performance Overhead}
+We evaluate InvisXR’s operational efficiency and runtime impact through quantitative benchmarks on an HTC Vive Pro Eye headset (120° FOV, 2880×1700 per eye, 90Hz refresh rate) connected to a Windows 11 system equipped with an Intel i9-13900K CPU, NVIDIA RTX 4090 GPU, and 128GB DDR5 RAM. Our experiments use SteamVR v2.2 as the OpenXR runtime, with Unity 2022.3 LTS for Beat Saber and the official Rec Room application build version of v2025.1.3. The InvisXR layer comprises a lightweight $\sim1.5$MB compiled DLL and a $\sim2$KB JSON manifest. Network commands execute via HTTPS (TLS 1.3) completed in $\leq$200ms, enabling near real-time control during attacks in both applications. Furthermore, we measure system latency across key OpenXR functions with and without the InvisXR layer to quantify runtime impact. Table~\ref{tab:overhead} shows the average execution time computed over 5000 frames, and observes that for Beat Saber and Rec Room, InvisXR introduces less than 17\% overhead on all tested functions, remaining well below perceptual detection thresholds for interactive XR applications. These findings confirm that InvisXR maintains low latency and real-time compatibility across target applications without degrading system performance or user experience, but remains stealthy.
+
+\section{User Study: Efficacy of InvisXR Attack}
+To evaluate the efficacy of our InvisXR attacks in deceiving XR users and uncovering systemic security vulnerabilities, we conducted a multi-phase user study comprising two components. First, a \textit{Developer study} was designed to examine how XR developers and designers perceive the security risks posed by InvisXR, focusing on the runtime-layer vulnerabilities, revealing knowledge gaps and defensive limitations within current XR development practices. Second, an \textit{End-user study} was conducted to measure how runtime compromises impact user behavior and perception during immersive experiences. The details are described below. 
+
+\textbf{Ethical Considerations.} The user study protocol for evaluating our InvisXR runtime-layer attack was reviewed and approved by our university’s Institutional Review Board (IRB). All participants provided written informed consent and brief demographics. No personal identifiers or real credentials were collected, stored, or transmitted, and all procedures complied with IRB standards and protected privacy throughout the study.
+
+
+\begin{figure}
+\centering
+\includegraphics[width=.9\columnwidth]{Fig/Attack8.pdf}
+\caption{
+ InvisXR runtime-layer attack exploiting a fake premium upgrade in Beat Saber. \textbf{(1)} User starts a basic mode (e.g., sword);
+\textbf{(2)} premium modes initially appear locked, intended to unlock naturally after gameplay progression; \textbf{(3)}  InvisXR injects a deceptive prompt, misleading users into subscribing prematurely; \textbf{(4)} attacker intercepts user-entered sensitive card details; \textbf{(5)} a fraudulent overlay falsely confirms premium activation;\textbf{(6)} upon completing a level, natural mode unlocking reinforces the illusion that the fake trial caused the upgrade.}
+\label{fig:Attack2}
+\end{figure}
+
+
+\subsection{Study 1: Developer Study}
+\label{sec:developer-study}
+
+\textbf{Participants:} We conducted a developer study with 15 XR professionals (10 males and 5 females) aged from 25 to 39 years (mean age 28.6, standard deviation (SD) 3.83). The group included 8 XR application developers (3 beginners, 3 mid-level, and 2 experts), 4 XR UI/UX designers, and 3 XR security researchers. All participants had at least 2 years of industry experience with OpenXR or XR development in Unity or Unreal Engine. 
+
+
+\textbf{Procedure:} Following established research practices~\cite{muller2014survey,creswell2017designing,fetters2013achieving}, we conducted a comparative study to evaluate two XR hijacking attacks. \textit{It is important to note that participants evaluated Attack A (Inception attack~\cite{yang2024inception}, an application-layer attack) and Attack B (our proposed InvisXR, a runtime-layer attack). We selected Inception as our baseline because it represents the state-of-the-art (SOTA) application-layer hijacking attack in XR, enabling direct comparison between application-layer and runtime-layer attack vectors.} To minimize bias, attacks were presented in randomized order without revealing their identities until the post-session debrief~\cite{cheng2023exploring}. Each participant completed a single 60-minute Zoom session scheduled across dispersed time zones over 40 days. The study aimed to evaluate: (i) threat perception and feasibility assessments comparing both attacks, (ii) resource requirements (development time, deployment cost, maintenance) across expertise levels, (iii) awareness of security detection practices and runtime-layer gaps, and (iv) perceived urgency to address runtime-layer vulnerabilities and defensive recommendations. The study proceeded through seven sequential stages as shown in Figure~\ref{fig:developerstudystep}. After obtaining informed consent and collecting participant demographics (Steps 1–2), we presented randomized, author-blind threat descriptions without implementation details (Step 3). Importantly, participants were informed that both attacks assume local code execution with standard user privileges, ensuring fair evaluation under comparable assumptions. Participants then completed a baseline assessment (Step 4) measuring attack implementation difficulty on a 5-point Likert scale~\cite{nemoto2014likert}, resource requirements, perceived barriers, detection confidence, and threat realism. Next, we presented technical implementation details, including architecture diagrams, code examples, and installation processes (Step 5). Participants completed revised assessments after the attacks disclosure (Step 6), then ranked both attacks and provided open feedback before identity revelation (Step 7). \textit{Note that for more details on the participants’ recruitment process, complete questionnaires, and qualitative insights, please refer to the Appendix B~\ref{sec:participantrecruitment},~\ref{sec:devStudySurvey},~\ref{sec:developerstudy}.}
+
+
+\textbf{Study Result:} The developer study compared perceived implementation difficulty between Attack A (Inception) and Attack B (InvisXR). During the initial assessment, 12 of 15 participants demonstrated limited runtime-layer awareness, mentioning only application-layer defenses. Following technical disclosure in Step 5, participants rated implementation difficulty for both attacks using a 5-point Likert scale~\cite{nemoto2014likert}. Results showed that Attack B received substantially lower difficulty ratings (mean = 2.1, SD = 0.83) compared to Attack A (mean = 3.4, SD = 0.91). Furthermore, a Shapiro-Wilk test~\cite{razali2011power} confirmed that the data were not normally distributed ($p < 0.05$). Therefore, we applied a Wilcoxon signed-rank test~\cite{taheri2013generalization} for pairwise comparisons, which revealed statistically significant differences (W = 105, p = 0.001). This demonstrates that developers perceived Attack B as substantially easier to implement, representing a 38\% reduction in perceived difficulty. During Post-disclosure, 93\% of participants (14 of 15) classified it as a serious threat (rating $\geq 8$ out of 10). Furthermore, resource requirement estimates supported this perception, showing consistent patterns across expertise levels as shown in Table~\ref{tab:developer-estimates}. Beginner developers estimated Attack B would require 50\% less development time and 73\% lower deployment costs, with similar reductions observed for mid-level and expert developers. In the final comparative assessment (Step 7), 13 of 15 participants ranked Attack B as more threatening than Attack A, and a sign test confirmed that this preference was statistically significant (p = 0.007). 
+
+
+\subsection{Study 2: End-User Experiment}
+\label{sec:end-user-experiment}
+The end-user experiment is designed to empirically assess how our proposed InvisXR attacks influence user trust and decision-making across different XR application genres. By simulating the attacks on real-world XR applications, such as Beat Saber and Rec Room. The study evaluates user susceptibility to deceptive UI overlays and measures the perceptual continuity of runtime-layer manipulations in both individual and social contexts. Specifically, we aimed to address four core research questions:
+\begin{itemize}
+    \item \textbf{RQ1:}  How do users react behaviorally to runtime-layer UI injections, such as fake upgrade prompts or social notifications under InvisXR attacks during immersive XR experiences?
+    
+    \item \textbf{RQ2:} To what extent do users perceive InvisXR-injected interfaces as authentic system elements, and how does this perception impact their trust in XR runtime integrity?
+
+    \item \textbf{RQ3:}  After being debriefed about the InvisXR attack, how do users reflect on their experience, trust in the system, and perceived vulnerability?
+    
+    \item \textbf{RQ4:} Can users recognize InvisXR’s persistent runtime presence when playing both Beat Saber and Rec Room, and what behavioral or contextual cues(if any) make this detection possible?
+\end{itemize}
+
+These research questions evaluate InvisXR's three core design objectives introduced in Section~\ref{sec:system-goals} \emph{stealthiness} (RQ1, RQ2, RQ4), \emph{persistence} (RQ4), and \emph{cross-application compatibility} (RQ3, RQ4).
+
+
+\textbf{Participants:} Our study involved 20 volunteer participants who received no reward (12 males and 8 females) aged from 18 to 40 years (mean age = 24.8, SD = 3.88), representing a range of XR experience levels. Participants were categorized into four groups: 4 expert users (daily engagement), 5 professional users (weekly use), 7 knowledgeable users (occasional experience), and 4 entry-level users (minimal exposure). Participants were American (20\%), Asian (60\%), Black (15.32\%), and Hispanic (4.68\%). Each participant completed a 20-minute Beat Saber session and a 10-minute Rec Room session, with a 5-minute break in between to mitigate fatigue and prevent context carryover. 
+
+
+\begin{table}[]
+\centering
+\caption{Approximate developer-estimated resource requirements for InvisXR (runtime-layer) versus Inception (app-layer) attacks. Estimates reflect average values gathered from structured threat modeling exercises.}
+\label{tab:developer-estimates}
+\resizebox{0.85\columnwidth}{!}{%
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Resource Factor}                                                      & \textbf{InvisXR (approx.)}                                                                                             & \textbf{Inception (approx.)}                                                                                              \\ \hline
+\textbf{\begin{tabular}[c]{@{}c@{}}Development Time\end{tabular}} & \begin{tabular}[c]{@{}c@{}}60 hrs (Beginner)\\ 40 hrs (Mid)\\ 30 hrs (Expert)\end{tabular} & \begin{tabular}[c]{@{}c@{}}120 hrs (Beginner)\\ 80 hrs (Mid)\\ 60 hrs (Expert)\end{tabular}   \\ \hline
+\textbf{Deployment Cost}                                                      & \begin{tabular}[c]{@{}c@{}}\$800 (Beginner)\\ \$500 (Mid)\\ \$300 (Expert)\end{tabular}    & \begin{tabular}[c]{@{}c@{}}\$3,000 (Beginner)\\ \$2,000 (Mid)\\ \$1,500 (Expert)\end{tabular} \\ \hline
+\textbf{\begin{tabular}[c]{@{}c@{}}Maintenance\end{tabular}} & \begin{tabular}[c]{@{}c@{}}10 hrs (Beginner)\\ 5 hrs (Mid)\\ 3 hrs (Expert)\end{tabular}   & \begin{tabular}[c]{@{}c@{}}40 hrs (Beginner)\\ 30 hrs (Mid)\\ 20 hrs (Expert)\end{tabular}    \\ \hline
+\end{tabular}%
+}
+\end{table}
+
+\textbf{Procedure:}
+The study was conducted in a controlled lab environment with participants using an HTC Vive Pro Eye headset connected to a Windows 11 desktop PC. After obtaining informed consent, each participant was introduced to the headset controls and given time to familiarize themselves with the XR environment. Participants were free to stop earlier if they chose to. The session was divided into two parts. 
+
+
+\textit{Part I (Beat Saber):} Participants played our Beat Saber clone (Section~\ref{sec:InvisXRInjectBeatSaber}) with progressive mode unlocks for 20 minutes. The first 10 minutes offered only basic \textit{Sword mode}, during which InvisXR injected a randomly assigned deceptive overlay: either a fake premium upgrade prompt or a fake cloud-save request, styled to match native UI. Based on score thresholds, participants could unlock \textit{Gun mode} and \textit{Sword \& Gun mode} for the second 10 minutes, otherwise they continued with \textit{Sword mode} for consistency.
+
+
+\textit{Part II (Rec Room):} After a 5-10 minutes break, participants entered the Rec Room session. During typical exploration activities (e.g., playing mini-games), InvisXR injected deceptive elements, including a forged in-game friend request and a nearby idle avatar, to simulate social presence. These manipulations were not part of the legitimate application experience, as detailed in Section~\ref{sec:recroom}. 
+
+Throughout both sessions, InvisXR operated as a pre-installed implicit OpenXR API layer, automatically activating without modifying application binaries. Participants were unaware that fake overlays and social cues originated from the runtime layer rather than the applications themselves, enabling observation of genuine responses to deceptive system-like prompts across both applications. After both sessions, participants were fully debriefed on the InvisXR attack and completed a post-study questionnaire that captured perceptions of UI authenticity, system trust, attack awareness, and overall reflections on XR security. Following established qualitative analysis methods~\cite{saldana2021coding}, two researchers independently reviewed session recordings to identify behavioral and perceptual patterns, retaining only themes mentioned by at least three participants to ensure reliability.
+
+
+\textbf{Study Result:}
+\label{sec:userstudyresult}
+The user study reveals critical behavioral and perceptual vulnerabilities when users encountered InvisXR's attack across both XR applications. Behavioral data and post-task interviews show that participants often failed to detect forged UI elements and trusted them as legitimate system components. In Beat Saber, 75\% of participants (9/12) who received cloud save prompts entered credentials without hesitation, while half of those encountering premium upgrade prompts (4/8) submitted credentials. Participants who unlocked features attributed success to the fake transaction, while those who failed blamed technical bugs rather than deception, supporting \textbf{RQ1} and \textbf{RQ2}. In Rec Room, 80\% of participants (16/20) accepted forged friend requests, with 12 initiating conversations and 5 continuing extended interactions. Despite some questioning avatar behavior, most accepted the interaction as legitimate, supporting \textbf{RQ4}. Furthermore, post-debrief reflections revealed significant gaps in understanding runtime-layer hijacking (\textbf{RQ3}), with 87\% of users realizing the compromise only after debriefing. \textit{Note that, to see participant behaviors and reactions in more detail from the user study, please see Appendix B~\ref{sec:End-userAp}.}
+
+\section{Cross-Runtime Portability of InvisXR}
+\label{sec:generalizabilityofinvisXR} We implement InvisXR on SteamVR and demonstrate its portability across multiple PC-based OpenXR runtimes (e.g., Meta Quest Link, WMR) without requiring code modifications, as shown in Figure~\ref{fig:crossruntime}. The OpenXR loader on all PC platforms reads implicit API layer configurations from the same Windows registry location (\texttt{HKCU\allowbreak\textbackslash SOFTWARE\allowbreak\textbackslash Khronos\allowbreak\textbackslash OpenXR\allowbreak\textbackslash 1\allowbreak\textbackslash ApiLayers\allowbreak\textbackslash Implicit}) and loads layers using identical interfaces defined by the Khronos OpenXR specification~\cite{khronosOpenXR}. InvisXR's single DLL and manifest work identically across all PC-based OpenXR runtimes because they operate at the standardized OpenXR loader layer rather than runtime-specific implementation layers. By switching the active runtime between SteamVR, Meta Quest Link, and WMR, we confirm that InvisXR loads automatically and executes attacks with identical effectiveness across all runtimes. This portability demonstrates that InvisXR exploits a platform-level design feature of the standardized OpenXR loader shared across all compliant PC runtimes rather than targeting implementation-specific vulnerabilities. Implicit trust in API layers is a fundamental design principle of the OpenXR specification for enabling runtime extensibility. As a result, any OpenXR-compliant PC runtime that uses the standard loader without additional safeguards is vulnerable to InvisXR-style attacks through this mechanism.
+
+
+\begin{figure}
+\centering
+    \includegraphics[width=.8\columnwidth]{Fig/CrossRuntime_1.pdf}
+     \caption{InvisXR exploits the standardized OpenXR loader mechanism: all OpenXR-compatible PC runtimes, including SteamVR, Meta Quest Link, and Windows Mixed Reality (WMR), read API layer configurations from the same registry location using identical APIs. This allows a single malicious DLL to work across all compliant runtimes without modification.}
+    \label{fig:crossruntime}
+\end{figure}
+
+\section{Applicability of InvisXR  in Alternative Threat Model}
+\label{sec:aditionalthreadmodel}
+Our proposed InvisXR attack is validated on PC-based XR systems with OpenXR runtime on Windows. Because of the widespread adoption of standalone XR headsets (e.g., Meta Quest, Pico) ~\cite{VRHeadsets2025}, we extend our analysis to examine whether InvisXR can be adapted for these standalone Android-based XR devices. The threat models we consider for standalone XR systems are highly inspired by the Inception attack~\cite{yang2024inception}. InvisXR's threat model for standalone environments differs architecturally from PC systems: instead of the Windows Registry, the OpenXR loader discovers API layers via Android system properties. We examine two deployment scenarios distinguished by privilege level. In developer-enabled mode (DEM), adversaries gain Android Debug Bridge (ADB) access to directly set system properties such as \texttt{persist.sys.xr\_api\_layer\_path}, achieving system-wide persistence across reboots and applications. This straightforward deployment achieves the same effectiveness as the PC implementation discussed in Section~\ref{sec:systemdesign}, though it is limited to the niche demographic with Developer Mode enabled. In developer-disabled mode (DDM), adversaries can distribute malicious mod tools (e.g., ModAssistant~\cite{Modassistant}) via community channels, deploy launcher applications that set environment variables, or bundle InvisXR within sideloaded applications.  In all DDM approaches, InvisXR operates identically within each compromised app's process, loading through the OpenXR layer chain and intercepting the same API calls. However, DDM lacks automatic system-wide persistence and requires repeated interception or broad distribution for significant coverage. While Android's application sandbox isolates processes~\cite{backes2015boxify}, InvisXR operates within a single app's isolated process, intercepting OpenXR calls to capture and exfiltrate sensitive data through the app's network connection.
+
+
+
+\section{Potential Defenses Against InvisXR}
+\label{sec:defense-strategy}
+To address InvisXR's threat to OpenXR's implicit trust in runtime components, we propose a multi-layered defense strategy informed by our developer study (Section~\ref{sec:developer-study}). First, \emph{prevention} requires the OpenXR loader to accept only cryptographically signed API layers and verify their provenance at install and load time, paired with secure boot and hardware-backed attestation~\cite{caulfield2023acfa}. While device-level attestation exists on platforms such as Meta's Platform Integrity API~\cite{meta2023attestation}, OpenXR needs a standardized API-layer validation across all vendors and runtimes. Prior work recommends API call authentication and strict parameter validation to prevent spoofing attacks~\cite{yang2024inception}, aligning with our developer study insights. However, even with prevention in place, a malicious layer might still execute, making \emph{detection} equally critical. Study participants reported limited runtime-level visibility, highlighting this need. Anomaly detection systems can monitor API call patterns and sensor data flows to flag suspicious activity~\cite{el2024cybersecurity}. For instance, frequent UI suppression or conflicting sensor readings may indicate a hijacking layer. The runtime should expose interfaces to list active API layers, enabling users and security tools to spot unauthorized components, while applications verify the consistency of sensor data. Finally, \emph{mitigation} involves swift response to detected attacks by isolating or unloading malicious layers, maintaining tamper-evident logs of critical events, and providing user controls over API layers. SteamVR's layer management interface exemplifies this approach~\cite{manus2024openxrdisable}. Applications can implement fallback-safe modes that restrict sensitive features when inconsistencies are detected, further limiting the impact of attacks.
+
+\section{Discussion}
+Our two-study (e.g., developer and end-user) evaluation reveals a critical blind spot in XR security that runtime-layer vulnerabilities pose fundamentally different threats than prior XR application-layer attacks. The developer study revealed a systemic knowledge gap: most participants had never considered runtime-layer security vulnerabilities, focusing instead on application-level defenses despite years of professional experience. For instance, one expert XR developer \textbf{P3} explained that \textit{``We have never validated \texttt{xrPollEvent} calls. Attackers could forge inputs with fewer than 100 lines of code''}. This unfamiliarity underscores why 93\% of developers ultimately classified InvisXR as a serious threat, representing a significant shift from their initial lack of awareness. Beyond awareness gaps, the resource disparity between our proposed  InvisXR attack and prior application-layer attacks fundamentally alters the threat landscape. For instance, another developer \textbf{P6} observed that InvisXR requires roughly \emph{10:1} effort of application-layer attacks because it affects every XR application without requiring per-target rebuilds. Likewise, end-user behavior for end-user studies revealed how our proposed InvisXR attacks exploit implicit trust by seamlessly integrating with legitimate system features. Participants consistently treated forged prompts as authentic. For instance, one XR user \textbf{P7} stated that \textit{``Cloud sync is common, so I just entered it to save my progress,''}, demonstrating how InvisXR’s runtime manipulation leverages established expectations, which supported our (\textbf{RQ1}). Moreover, participants who unlocked features attributed success to fake transactions, such as (\textbf{P10} mentioned that \textit{``The premium purchase was worth it''}), while those experiencing failures blamed application bugs rather than system compromise as (\textbf{P12} said that \textit{``I'm sure I provided the correct credentials, but it seems like there was a bug''}). This misattribution reveals how malicious behavior gets interpreted as software quality issues, allowing the InvisXR attack to persist undetected, supporting our (\textbf{RQ2}). Similarly, in Rec Room's social context, participants accepted forged interactions despite anomalies. For example, \textbf{P14} raised questions about avatar behavior (\textit{``Why is my avatar just standing there?''}) yet continues interaction without recognizing a system-level compromise, demonstrating genre-specific trust exploitation, supporting our (\textbf{RQ4}). Furthermore, post-debrief reflections underscored these vulnerabilities, where \textbf{P3} expressed disbelief that (\textit{``Wait, that was fake? I really thought I paid for premium''}) and another \textbf{P19} captured broader implications that (\textit{``That's scary. I didn't even question it''}), satisfied (\textbf{RQ3}). Moreover, 87\% of participants remained unaware until explicit debriefing. Therefore, our proposed InvisXR demonstrates fundamentally greater stealth than SOTA application-layer attacks, in which users typically report suspicion, revealing that runtime-layer compromise operates below users' threat detection thresholds.
+
+
+Since no previous work has applied runtime-layer hijacking attacks targeting the OpenXR API layer mechanism across multiple XR applications, our results are not directly comparable with those of SOTA application-layer, GUI confusion and prior XR attacks~\cite{yang2024inception, lee2025illusion, su2024remote, nair2022exploring,shi2021face,ye2025bpsniff,xiu2025detecting,huang2012clickjacking,fratantonio2017cloak,ren2017windowguard}. However, we compare our findings regarding the systemic impact and stealthiness of runtime-layer compromise. Prior work has focused primarily on application-specific threats, such as immersive hijacking attacks~\cite{yang2024inception}, UI deception attacks~\cite{lee2025illusion}, and remote keylogging~\cite{su2024remote}. While these attacks successfully exploit application-layer vulnerabilities, they remain confined to individual applications and require per-target compromise, limiting their persistence. In contrast, our work is the first to demonstrate that runtime-layer compromise grants seamless control across multiple unmodified OpenXR applications without requiring binary modification or elevated privileges. Unlike application-layer attacks that must be reimplemented for each target,  InvisXR operates through a single registry entry that affects every OpenXR application on the XR device. This positioning enables InvisXR to persist across application updates and system reboots while remaining invisible to conventional defenses~\cite{guo2024empirical, yang2024inception} such as code obfuscation, signature verification, and runtime integrity checks, which assume runtime components are trustworthy. Moreover, the OpenXR specification's design principle of implicit layer trust, intended to enable legitimate extensibility, becomes a systemic vulnerability when adversaries exploit the same mechanism. Although this study focused on two popular XR applications (e.g.,  Beat Saber and Rec Room), our findings are broadly applicable to various SOTA OpenXR-compliant applications. \textit{Note that for additional attack scenarios targeting other XR application domains are provided in the supplementary material.}  
+
+
+\section{Limitation and Future Works}
+Our evaluation confirms the feasibility of our proposed InvisXR across various XR applications, but it has a few limitations. First, due to the lack of time, resources, and budgetary constraints, we did not conduct a large-scale trial with a broad participant pool. Both the developer study and end-user study involved relatively small, demographically limited groups, with imbalanced gender representation and without explicit consideration of other demographic factors. Second, our evaluation is limited to a specific hardware configuration (i.e., HTC Vive Pro Eye) and representative applications (i.e., Beat Saber and Rec Room), which may not generalize to other setups or future XR technologies. Third, while in Section~\ref{sec:aditionalthreadmodel} we showed that InvisXR can be extended to standalone XR headsets, we did not implement or evaluate our proposed attack on these approaches in practice for the same reason. Lastly, we proposed defense mechanisms in Section~\ref{sec:defense-strategy} but did not prototype or validate them. Implementing and evaluating these defenses would demonstrate their effectiveness at preventing malicious layer injection while preserving legitimate OpenXR extensibility. Future work should conduct broader user studies, prototype the proposed defenses, and assess InvisXR across diverse XR applications.
+
+
+\section{Conclusion}
+In this work, we introduce \textit{InvisXR}, a novel runtime-layer hijacking attack that enables adversaries to stealthily compromise XR applications by injecting malicious logic into the OpenXR API layer. InvisXR silently compromises the OpenXR runtime, granting attackers covert control over user inputs, UI elements, and session management across all XR applications, making malicious activities difficult for users to distinguish during sessions. We design and implement InvisXR on a consumer-grade XR headset (e.g., HTC Vive Pro Eye) using the openXR runtime (e.g., SteamVR ), targeting popular XR applications (e.g., Beat Saber and Rec Room). Our practical demonstrations illustrate how InvisXR enables stealthy, unauthorized interactions that remain undetected by XR users. Furthermore, we conducted two user studies with XR developers and end users. The developer study shows that runtime-layer attacks are perceived as far more severe than application-layer threats, with 93\% of participants identifying InvisXR as a serious threat. The end-user study reveals that InvisXR attacks remain imperceptible during gameplay, with 87\% of participants unaware until post-session debrief. Finally, we discuss potential defenses integrating API-layer validation, runtime attestation, and anomaly-based detection to mitigate InvisXR attacks without sacrificing cross-platform compatibility. These findings highlight a critical, previously underexplored vulnerability in OpenXR-enabled XR systems, underscoring the urgent need for secure, runtime-aware design principles to ensure user safety, trust, and reliability in future XR applications.
+
+
+\section{Appendix A}
+\subsection{Ethical Considerations}
+\label{app:ethicalconsiderations}
+This research received Institutional Review Board (IRB) approval. User studies in \textit{Beat Saber} and \textit{Rec Room} were run under IRB oversight with informed consent. Participants could withdraw at any time and were fully debriefed after their sessions. Tasks were brief, low-risk, and continuously supervised. A minimal deception by omission (concealing the runtime-layer intervention) was IRB-approved as necessary to preserve ecological validity and was explained during debriefing.
+
+We prioritized privacy and data protection. No real credentials or sensitive personal data were collected. Credential-like inputs entered during attack scenarios were tokenized and bound to dummy values, ensuring they could not be used outside the experiment. All sinks were kept local or disabled, and packet capture verified that no data left the secure lab environment (i.e., no HTTP traffic or external transmission occurred). Recorded measures such as task performance and questionnaire responses were stored securely, anonymized or aggregated, and used only for research analysis.
+
+Finally, we considered the dual-use implications of our findings. Revealing details of a novel XR exploit can aid malicious actors, but it also empowers defenders and stakeholders to strengthen security. 
+Accordingly, we practice responsible disclosure: the paper provides sufficient methodological detail and results to evaluate the work while withholding operational code and trigger specifics that could facilitate misuse. Guided by the Menlo principles (e.g., Respect for Persons, Beneficence, Justice, and Respect for Law and Public Interest), we judge that the benefits to security and knowledge outweigh the minimal, mitigated participant risks and that the insights will help proactively improve XR safety.
+
+\subsection{Open Science}
+\label{app:openscience}
+In accordance with the USENIX Security open‑science policy, we disclose artifact availability. At submission time, we \emph{do not release} research artifacts: no source code, manifests (e.g., \texttt{InvisXR.dll}, \texttt{InvisXR\_API\_Layer.json}), or videos. The proof-of-concept exploit is withheld to prevent dual use. Publishing executable implementations or precise triggers could significantly assist adversaries before defenses are widely deployed. Videos from user sessions are similarly withheld to protect participant privacy and avoid re‑identification. The paper provides sufficient methodological detail, experimental setup, and measurement results for reviewers to evaluate our claims without direct access to artifacts. We will revisit releasing redacted, non-executable materials after responsible disclosure and once platform-level defenses are broadly deployed. For now, our approach balances openness with responsibility: we prioritize security and ethics over immediate artifact release and will share more broadly only when doing so poses no risk to participants or the public.
+
+
+{\footnotesize \bibliographystyle{acm}
+\bibliography{USENIX_2026}}
+
+%\bibliographystyle{plain}
+%\bibliography{\jobname}
+%\bibliography{ref}
+\section{Appendix B}
+\subsection{Additional Materials for Section~\ref{sec:interception_algorithm}}
+\label{sec:interception_algorithmAp}
+
+This section provides the complete technical details of InvisXR's function interception mechanism. Algorithm~\ref{alg:invisxr_generic} presents the systematic approach InvisXR uses to intercept and manipulate OpenXR API calls.
+
+InvisXR leverages OpenXR's implicit API-layer mechanism to interpose on specific API functions, such as \texttt{xrCreateInstance}. As outlined in Algorithm~\ref{alg:invisxr_generic}, the layer registers with the loader and resolves downstream trampolines (Lines~1–3), then, at initialization, a policy $P$ decides whether InvisXR activates and which capability modules to enable (Line~4). Here, a \emph{function} $f\!\in\!\mathcal{F}$ denotes any OpenXR entry point chosen for interposition (e.g., initialization, event polling, spatial queries, frame submission), a \emph{module} $m\!\in\!\mathcal{M}$ is a plug-in capability that may implement optional \textsf{pre}/\textsf{post} hooks around a call (e.g., event rewriting, pose adjustment, visual composition), and the \emph{policy} $P$ maps the current context (application/runtime identifiers, device state, experiment condition) to an activation decision and a parameterized subset of modules. The main loop then processes each intercepted call (Line~5): if not active, the layer transparently forwards to the next element in the chain (Lines~6–8); if active, enabled modules may run pre-hooks, the call is forwarded via the trampoline, and post-hooks can transform arguments/results or schedule deferred work (Lines~9–16). For visual composition modules, the correct path is to render into layer-managed swapchains and \emph{append} an additional \texttt{XrCompositionLayer*} to \texttt{XrFrameEndInfo.layers} before forwarding \texttt{xrEndFrame}; modules targeting events or spatial data operate around calls such as \texttt{xrPollEvent} or \texttt{xrLocateSpace} after the trampoline. After any transformations, the (possibly modified) result is returned and resources are released at teardown (final line).
+
+
+\begin{algorithm}[!t] \footnotesize
+\caption{Runtime hijacking via InvisXR}
+\label{alg:invisxr_generic}
+\DontPrintSemicolon
+\SetKwInOut{Input}{Inputs}
+\SetKwInOut{Output}{Outputs}
+\Input{OpenXR function set $\mathcal{F} = \{\texttt{Func\_1}, \texttt{Func\_2}, \texttt{Func\_3}, \ldots\}$ \\ 
+Capability modules $\mathcal{M} = \{\textsf{Module\_1}, \textsf{Module\_2}, \ldots\}$ \\
+Policy $P$ (activation criteria \& module selection)}
+\Output{Selected runtime manipulations (per $P$)}
+
+\begin{algorithmic}[1]
+\STATE Load InvisXR via \texttt{xrNegotiateLoaderApiLayerInterface}
+\STATE Resolve trampolines with \texttt{xrGetInstanceProcAddr} 
+\STATE Hook functions $f \in \mathcal{F}$  
+\STATE \textbf{On initialization:} \texttt{Active} $\gets P.\textsf{activate}(\text{context})$; \quad \texttt{Mods} $\gets P.\textsf{select}(\mathcal{M})$  
+\FOR{\textbf{each} intercepted call $f \in \mathcal{F}$}
+    \IF{\textbf{not} \texttt{Active}}
+        \STATE Call next in chain (trampoline)  
+        \STATE \textbf{continue}
+    \ENDIF
+    \FOR{\textbf{each} $m \in$ \texttt{Mods}}
+        \STATE $m.\textsf{pre}(f, \text{args}, \text{state})$  
+    \ENDFOR
+    \STATE result $\gets$ Call next in chain (trampoline)  
+    \FOR{\textbf{each} $m \in$ \texttt{Mods}}
+        \STATE $m.\textsf{post}(f, \text{args}, \text{state}, \text{result})$ 
+    \ENDFOR
+    \STATE \textbf{return} result  
+\ENDFOR
+\STATE \textbf{On teardown:} release resources and clear state  
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Participant Recruitment} 
+\label{sec:participantrecruitment}
+We recruited XR professionals through neutral channels, including GitHub XR project contributor lists, OpenXR SDK mailing lists, and XR development community forums. The recruitment materials shown in Figure~\ref{fig:sms} described the study as \textit{investigating how XR professionals perceive and assess emerging security threats in XR systems}, without mentioning specific attacks, runtime-layer mechanisms, or InvisXR. This neutral framing prevented recruitment bias and self-selection based on prior knowledge of attacks. Participants were selected based on two criteria: (1) at least 2 years of professional XR development, design, or security research experience, and (2) familiarity with OpenXR or XR development in Unity or Unreal Engine. We included participants across three XR professional roles (developers, UI/UX designers, and security researchers) to capture diverse perspectives on threat perception.
+
+\begin{figure}[h]
+    \centering
+    \begin{tcolorbox}[
+        enhanced,
+        colback=gray!5!white,
+        colframe=gray!75!black,
+        left=2pt,right=2pt,top=2pt,bottom=2pt,
+        boxrule=0.3pt,
+        arc=2pt,
+        fontupper=\small\itshape
+    ]
+Thank you for your interest in participating in this research study. We are investigating how XR professionals perceive and assess emerging security threats in XR systems. Your professional experience, whether as an application developer, UI/UX designer, or security researcher, is valuable for understanding threat awareness in the XR industry. In this study session, you will be presented with two XR attack scenarios and asked to provide your professional assessment of each threat's feasibility, detectability, and real-world impact. Your honest feedback helps us understand how the XR professional community evaluates security risks. This study is voluntary and confidential. Your responses will be used for research purposes only and aggregated with other participants' responses.
+\end{tcolorbox}
+    \caption{Recruiting message accompanying the survey link.}
+    \label{fig:sms}
+\end{figure}
+
+\subsection{Developer Study Survey Questionnaire}
+\label{sec:devStudySurvey}
+
+This section presents the complete questionnaires used in the developer study. Participants evaluated two XR hijacking attacks, Attack A (Inception) and Attack B (InvisXR), presented in randomized order without revealing authorship. Questions Q1-Q7 were administered in Step 4 (baseline assessment), Questions Q8-Q12 in Step 6 (post-disclosure assessment), and Comparative question C1 after both attacks were assessed.
+
+\subsection{Assessment Without Technical Details (Q1-Q7)}
+\textit{Questions below were asked for Attack A, then repeated identically for Attack B.}
+
+\begin{enumerate}
+    \item[Q1.] How difficult would it be for an attacker to implement this attack against XR applications? \\(i) 1 = Very easy (ii) 2 = Easy (iii) 3 = Moderate (iv) 4 = Hard (v) 5 = Impossible
+    
+    \item[Q2.] Estimate the resource requirements for implementing this attack across different expertise levels: 
+    \begin{itemize}
+    \item Development Time (hours): Beginner (1-2 years): \_\_\_\_ hours; Mid-level (3-5 years): \_\_\_\_ hours; Expert (6+ years): \_\_\_\_ hours
+    \item Deployment Cost: Beginner: \$\_\_\_\_; Mid-level: \$\_\_\_\_; Expert: \$\_\_\_\_
+    \item Maintenance (hours/month): Beginner: \_\_\_\_; Mid-level: \_\_\_\_; Expert: \_\_\_\_
+    \end{itemize}
+    
+    \item[Q3.] What technical barriers would prevent this type of attack? [Open-ended]
+    
+    \item[Q4.] If this attack presented a fake system prompt during gameplay (e.g., \textit{``Update Required''}), how likely would you be to trust it? \\(i) 1 = Would not trust at all (ii) 2 = Would probably not trust (iii) 3 = Uncertain (iv) 4 = Would probably trust (v) 5 = Would definitely trust
+    
+    \item[Q5.] How confident are you that you would detect this attack in your own XR applications? \\(i) 1 = Not at all confident (ii) 2 = Slightly confident (iii) 3 = Moderately confident (iv) 4 = Very confident (v) 5 = Extremely confident
+    
+    \item[Q6.] What methods do you currently use to ensure unauthorized runtime modifications aren't interfering with your XR applications? [Open-ended]
+    
+    \item[Q7.] Based on the threat description alone, on a scale of 1-10, how realistic is this attack in practice? \\Realism score: \_\_\_\_ / 10
+\end{enumerate}
+
+\subsubsection{Assessment With Technical Details (Q8-Q12)}
+\textit{Questions below were asked after technical implementation details were disclosed.}
+
+\begin{enumerate}
+    \item[Q8.] Now that you've seen the implementation details, how difficult would this attack actually be to implement? \\(i) 1 = Very easy (ii) 2 = Easy (iii) 3 = Moderate (iv) 4 = Hard (v) 5 = Impossible
+    
+    \item[Q9.] Would you revise your estimates from Q2? If yes, please explain what changed and why. [Open-ended]
+    
+    \item[Q10.] Which aspect of the implementation surprised you most? [Open-ended]
+    
+    \item[Q11.] On a scale of 1-10, how realistic is this threat given the implementation approach you reviewed? \\Realism score: \_\_\_\_ / 10
+    
+    \item[Q12.] How urgent do you feel it is for the XR community to address security vulnerabilities against this attack? \\(i) 1 = Not urgent (ii) 2 = Slightly urgent (iii) 3 = Moderately urgent (iv) 4 = Very urgent (v) 5 = Extremely urgent \\What defensive measures would you recommend? [Open-ended]
+\end{enumerate}
+
+\subsubsection{Comparative Assessment (C1)}
+\textit{After completing Q1-Q12 for both attacks:}
+
+\begin{enumerate}
+    \item[C1.] Which attack poses a greater overall threat to XR applications? \\(i) Attack A is significantly more threatening (ii) Attack A is somewhat more threatening (iii) Both attacks pose equal threats (iv) Attack B is somewhat more threatening (v) Attack B is significantly more threatening \\Please explain your choice: [Open-ended]
+\end{enumerate}
+
+\subsection{Developer Study Qualitative Insights}
+\label{sec:developerstudy}
+
+This section presents qualitative insights from developer study participants' discussions during the evaluation sessions.
+
+\textbf{Initial Assessment Insights:} During initial assessment, participants revealed significant knowledge gaps regarding runtime-layer security. When asked about technical barriers (Q3), most cited only application-layer defenses. XR security researcher P12 acknowledged: \textit{``Despite auditing 20+ XR apps, I never checked the system-level OpenXR layer registry. I think this is a systemic industry blind spot.''} Developer P8 noted: \textit{``We always focused on input sanitization at the app level but never thought the runtime itself could be a threat.''} Designer P7 observed: \textit{``The visual UI style that appears in XR applications is easy to mimic, and the design elements are publicly available so that any designer can recreate it without much hassle.''}
+
+\textbf{Threat Comparison Insights:} During comparative assessment, participants articulated clear reasons for ranking InvisXR as more threatening. Security researcher P13 provided an analogy: \textit{``Attack A feels like breaking into a house through the front door, so it's visible and labor-intensive. Attack B is like having master keys to every room, invisible and systemic.''} Mid-level developer P6 observed: \textit{``Attack A requires rebuilding the UI for each game update, while Attack B only requires updating a single layer. From my perspective, that's roughly a 10:1 effort difference.''} Expert developer P2 summarized: \textit{``We've been playing whack-a-mole with app vulnerabilities, while attackers have been tunneling beneath the foundation.''}
+
+\textbf{Defensive Recommendations:} Twelve of 15 participants rated urgent action necessary to address runtime-layer vulnerabilities. Proposed defense strategies included: \emph{near-term} measures (enforcing signed/whitelisted layers, monitoring manifests and registry keys, CI checks, validating runtime-supplied events with per-app consent); \emph{medium-term} goals (runtime IDS/telemetry, overlay authentication, IDE/tooling checks, security checklists); and \emph{longer-term} proposals (OpenXR extensions for attestation, isolation, per-title authorization, and secure boot for runtimes).
+
+\subsection{End-User Study Behavioral Data}
+\label{sec:End-userAp}
+
+Table~\ref{tab:userstudyresult} summarizes participant behaviors across Beat Saber and Rec Room sessions, highlighting responses to injected UI elements and social interactions.
+
+\begin{table*}[h]
+\centering
+\caption{Runtime-layer hijacking across XR applications. Metrics: Participant ID (PID), Provided Credentials (PC), Features Unlocked (FU), User Reaction (UR), Request Accepted (RA), Started Conversation (SC), Conversation Length (CL).}
+\label{tab:userstudyresult}
+\resizebox{.7\textwidth}{!}{%
+\begin{tabular}{|c|cccc|cccc|}
+\hline
+\multirow{2}{*}{\textbf{PID}} & \multicolumn{4}{c|}{\textbf{Beat Saber}} & \multicolumn{4}{c|}{\textbf{Rec Room}} \\ \cline{2-9} 
+& \multicolumn{1}{c|}{\textbf{Attack Type}} & \multicolumn{1}{c|}{\textbf{PC}} & \multicolumn{1}{c|}{\textbf{FU}} & \textbf{UR} & \multicolumn{1}{c|}{\textbf{RA}} & \multicolumn{1}{c|}{\textbf{SC}} & \multicolumn{1}{c|}{\textbf{CL}} & \textbf{UR} \\ \hline
+P1 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Short} & Normal \\ \hline
+P2 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & Excited & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{N/A} & Normal \\ \hline
+P3 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Long} & Excited \\ \hline
+P4 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{N/A} & Normal \\ \hline
+P5 & \multicolumn{1}{c|}{Premium} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & Excited & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Long} & Normal \\ \hline
+P6 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{No} & Confused & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Short} & Confused \\ \hline
+P7 & \multicolumn{1}{c|}{Premium} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & Excited & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Short} & Normal \\ \hline
+P8 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{Yes} & Suspected & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Short} & Normal \\ \hline
+P9 & \multicolumn{1}{c|}{Premium} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Short} & Confused \\ \hline
+P10 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{N/A} & Normal \\ \hline
+P11 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{No} & Confused & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Long} & Normal \\ \hline
+P12 & \multicolumn{1}{c|}{Premium} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{N/A} & Suspected \\ \hline
+P13 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Long} & Normal \\ \hline
+P14 & \multicolumn{1}{c|}{Premium} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{No} & Confused & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Short} & Confused \\ \hline
+P15 & \multicolumn{1}{c|}{Premium} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{N/A} & Normal \\ \hline
+P16 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Short} & Normal \\ \hline
+P17 & \multicolumn{1}{c|}{Premium} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{No} & Confused & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{N/A} & Normal \\ \hline
+P18 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{Yes} & Suspected & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Short} & Normal \\ \hline
+P19 & \multicolumn{1}{c|}{Premium} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{No} & \multicolumn{1}{c|}{N/A} & Normal \\ \hline
+P20 & \multicolumn{1}{c|}{Cloud Save} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & Normal & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Yes} & \multicolumn{1}{c|}{Short} & Normal \\ \hline
+\end{tabular}%
+}
+\end{table*}
+
+\subsection{InvisXR Applicability to Other XR Domains}
+\label{sec:invisxr_other_apps}
+
+Beyond Beat Saber and Rec Room, InvisXR can be adapted to additional XR application classes, demonstrating how subtle manipulation of pose, gaze, or interaction logic enables stealthy interference across competitive, educational, and collaborative environments.
+
+\subsubsection{Pose Distortion Attack in Competitive Shooting Games}
+
+In competitive environments such as Pavlov VR or Onward, success relies on precise aiming and real-time motor control. InvisXR can degrade user performance by intercepting and altering \texttt{xrLocateSpace} return values, introducing minor randomized offsets to aiming reticle or dominant hand position. These offsets can be time-synchronized with high-stress moments (reloading, engaging enemies), resulting in slight but consistent inaccuracy leading to missed shots and user frustration. Users remain unaware, attributing declining performance to fatigue, calibration issues, or personal error. This sensor-layer manipulation is virtually undetectable and could alter competitive outcomes, affect rankings, or discourage tournament participation.
+
+\subsubsection{Invisible Gaze Hijack in Educational Platforms}
+
+In XR education platforms such as Engage or VictoryXR, gaze tracking assesses attention and personalizes instruction. InvisXR can intercept \texttt{xrGetEyeGaze} calls and inject small distortions into gaze vector data. If users should look at specific training prompts, InvisXR shifts reported gaze direction off-center, causing applications to misinterpret engagement and trigger unnecessary repetitions or incorrect feedback. Over time, these micro-manipulations affect performance metrics, learning curves, and AI-based personalization algorithms. Additionally, by storing true gaze points before alteration, InvisXR enables passive gaze logging and behavioral profiling of focus patterns, dwell times, and preferred targets without requesting elevated permissions, enabling both task manipulation and long-term cognitive attention surveillance.
+
+
+\end{document}
+
+
+
+
+
+
+
