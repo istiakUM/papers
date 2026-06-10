@@ -1,0 +1,1367 @@
+%% CogXRVRST_2026.tex
+%% ACM sigconf article (anonymous review) -- converted from the VGTC
+%% submission "Unveiling Cognitive Attacks on Multimodal LLM-based XR
+%% Cognitive Assistants through Trojans".
+%%
+%% The C# Trojan code listing uses the `listings' package (pure LaTeX,
+%% no -shell-escape, no external Pygments call), so the document compiles
+%% quickly and stays within Overleaf's free-plan compile-time limit.
+\documentclass[sigconf,review,anonymous]{acmart}
+
+%% ---- Packages required by the paper body (in addition to acmart) ----
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{multirow}        % multi-row table cells
+\usepackage{adjustbox}       % scale the code-listing box
+\usepackage{makecell}
+\usepackage[most]{tcolorbox} % framed example-prompt box
+\usepackage{listings}        % C# Trojan code listing (pure TeX, no shell-escape)
+%% Coloured syntax highlighting for the C# Trojan listing -- reproduces the
+%% original minted look but in pure TeX (fast, no -shell-escape, no timeout).
+%% This colour is intentional and ONLY in the code figure; the body-text
+%% \textcolor commands were removed per your request.
+\lstset{%
+  language={[Sharp]C},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{green!45!black}\itshape,
+  stringstyle=\color{red!60!black},
+  numbers=left, numbersep=6pt,
+  frame=single, framesep=2mm,
+  xleftmargin=1mm, xrightmargin=1mm,
+  breaklines=true, breakatwhitespace=false,
+  breakindent=1.2em,
+  postbreak=\mbox{\textcolor{red!60!black}{$\hookrightarrow$}\space},
+  columns=fullflexible, keepspaces=true,
+  showstringspaces=false,
+  tabsize=2,
+}
+\usepackage{enumitem}        % itemize tuning
+\setlist[itemize]{noitemsep}
+\usepackage{xurl}            % allow long URLs / DOIs to break
+\usepackage[most]{tcolorbox}
+
+\newtcolorbox[auto counter]{promptbox}[2][]{
+    enhanced,
+    colback=gray!5!white,
+    colframe=gray!75!black,
+    left=2pt,
+    right=2pt,
+    top=2pt,
+    bottom=2pt,
+    fonttitle=\bfseries,
+    title={Prompt~\thetcbcounter : #2},
+    label={#1}
+}
+%% ---- Rights / conference metadata ----
+%% PLACEHOLDERS: replace with the values from your ACM rights-confirmation
+%% email after acceptance. They are not shown in anonymous review mode.
+\setcopyright{acmlicensed}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{XXXXXXX.XXXXXXX}
+\acmConference[VRST '26]{ACM Symposium on Virtual Reality Software and Technology}{2026}{}
+\acmISBN{978-1-4503-XXXX-X/2026/XX}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{Bib\TeX}}}
+
+\begin{document}
+
+%% ---- Title ----
+\title{Unveiling Cognitive Attacks on Multimodal LLM-based XR Cognitive Assistants through Trojans}
+
+%% ---- Authors (placeholder names carried over from the source;
+%%      hidden by the `anonymous' option) ----
+\author{Roy G. Biv}
+\email{roy.g.biv@aol.com}
+\affiliation{%
+  \institution{Starbucks Research}
+  \country{USA}
+}
+
+\author{Ed Grimley}
+\email{ed.grimley@aol.com}
+\affiliation{%
+  \institution{Grimley Widgets, Inc.}
+  \country{USA}
+}
+
+\author{Martha Stewart}
+\email{martha.stewart@marthastewart.com}
+\affiliation{%
+  \institution{Martha Stewart Enterprises}
+  \country{USA}
+}
+\affiliation{%
+  \institution{Microsoft Research}
+  \country{USA}
+}
+
+\renewcommand{\shortauthors}{Biv et al.}
+
+%% ---- Abstract ----
+\begin{abstract}
+Extended Reality (XR), empowered by large vision-language models (LVLMs), rapidly transforms user interactions through complex tasks by overlaying visual cues and textual instructions, enhancing performance in daily and high-stakes scenarios. However, this growing reliance also introduces new, underexplored security risks, particularly those that subtly target users' perception and cognition rather than system infrastructure. In this paper, we introduce, for the first time, a cognitive attack Trojan that targets LVLM-guided intelligent XR cognitive assistants by subtly manipulating systems' perception to degrade user task performance. Unlike other attacks, this Trojan remains hidden within the application and does not interfere with the application’s functionality until the attack is triggered. Once triggered, such attacks increase users' cognitive load, extend task completion times, and disrupt the immersive flow of the XR experience, leading to frustration and reduced trust in the intelligent XR cognitive assistant. To demonstrate the effectiveness of this attack, we first develop \textit{CogXR}, an LVLM-guided intelligent XR cognitive assistant on the Magic Leap 2 headset that provides real-time visual and textual guidance for diverse cognitive tasks. We then evaluate \textit{CogXR} across two distinct cognitive task categories: spatial reasoning tasks (e.g., Rubik's Cube solving) and procedural tasks (e.g., cooking) to assess how the attack influences performance under varying levels of cognitive demand. Our findings demonstrate that, when triggered, the Trojan subtly manipulates visual input, misleading the LVLM across both task categories, resulting in prolonged task completion times, increased cognitive demand, and disrupted immersive flow. \textcolor{blue}{Our conducted user studies on both spatial reasoning and procedural tasks show that the cognitive attack Trojan increases task completion time by up to 43\% on the spatial-reasoning task and 25.2\% on the procedural task relative to the no-attack condition,} elevating cognitive load and degrading performance, highlighting critical vulnerabilities in XR systems.
+
+
+
+% increases task completion time by 43\% for Rubik's Cube solving and 25.2\% for cooking compared to the no-attack condition, elevating cognitive load and degrading performance, highlighting critical vulnerabilities in XR systems.
+\end{abstract}
+
+%% ---- CCS concepts ----
+%% NOTE: the VGTC source had no CCS concepts. The block below is a
+%% best-effort placeholder; regenerate the exact codes for your paper at
+%% https://dl.acm.org/ccs and replace it.
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10002978.10003022</concept_id>
+       <concept_desc>Security and privacy~Software and application security</concept_desc>
+       <concept_significance>500</concept_significance>
+   </concept>
+   <concept>
+       <concept_id>10003120.10003123</concept_id>
+       <concept_desc>Human-centered computing~Mixed / augmented reality</concept_desc>
+       <concept_significance>300</concept_significance>
+   </concept>
+   <concept>
+       <concept_id>10010147.10010178</concept_id>
+       <concept_desc>Computing methodologies~Artificial intelligence</concept_desc>
+       <concept_significance>100</concept_significance>
+   </concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Security and privacy~Software and application security}
+\ccsdesc[300]{Human-centered computing~Mixed / augmented reality}
+\ccsdesc[100]{Computing methodologies~Artificial intelligence}
+
+%% ---- Keywords ----
+%% The ACM sigconf sample template does not use a \keywords command, so it
+%% is commented out here (kept, not removed). It came from your VGTC source;
+%% uncomment the line below if you want keywords printed.
+% \keywords{Extended Reality, Cognitive Attack, Large Vision Language Models, Cognitive Load.}
+
+%% ---- Teaser figure (disabled in the source; uncomment to enable) ----
+% \begin{teaserfigure}
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/Teaser_two.pdf}
+%   \caption{Malicious CogXR attack pipeline across two task domains:
+%   (a) Rubik's Cube solving and (b) Cooking.}
+%   \label{fig:teaser}
+% \end{teaserfigure}
+
+\maketitle
+
+\section{Introduction}
+The recent trend of integrating advanced pre-trained large vision-language models (LVLMs) into extended reality (XR) systems is revolutionizing their capabilities, enabling personalized, context-aware interactions that significantly reshape our engagement with the world. One such notable application is LVLM-driven intelligent XR systems, denoted as intelligent XR cognitive assistance, which overlay step-by-step instructions onto users' fields of view and guide them through complex tasks that require spatial reasoning and systematic thinking. \textcolor{blue}{For instance, spatial reasoning tasks (e.g., puzzle and configuration solving), where visual understanding and methodical reasoning are essential, or procedural tasks (e.g., assembly, maintenance, and cooking), which require sequential step-by-step guidance, are significantly enhanced by LVLMs in XR environments~\cite{wang2025cuberobot, ren2025rubikon, srinidhi2024xair, ghasemi2023embedding, zhao2025guided, qorbani2025teaching, dugar2024augmented, vir2024archef, lau2025adaptive, qu2024looking}.} 
+
+
+% For instance, spatial reasoning tasks like solving a Rubik's Cube, where visual understanding and methodical reasoning are essential, or procedural tasks such as making coffee, cooking, or assembling furniture, which require sequential step-by-step guidance, are significantly enhanced by LVLMs in XR environments~\cite{wang2025cuberobot, ren2025rubikon, srinidhi2024xair, ghasemi2023embedding, zhao2025guided, qorbani2025teaching, dugar2024augmented, vir2024archef, lau2025adaptive, qu2024looking}. 
+
+
+Furthermore, researchers have also integrated LVLMs into XR systems to facilitate nuanced tasks such as pronoun disambiguation for voice assistants~\cite{lee2024gazepointar}, intelligent XR-based activity recording and analysis~\cite{janaka2024tom}, documentation and writing support~\cite{cai2024pandalens}, augmented object intelligence~\cite{dogan2024augmented}, understanding user behaviors and contextual reasoning~\cite{kim2025explainable}, and even harmful content detection within XR environments. These advancements underscore the role of LVLMs in transforming XR into a robust cognitive augmentation platform that supports users in both mundane and mission-critical scenarios. Beyond this, such integrations are also expected in \emph{safety-critical applications}, such as the recently announced next-generation military XR headsets, designed and built by Anduril and Meta to provide warfighters with enhanced perception, assistance, and enable intuitive control of autonomous platforms on the battlefield~\cite{anduril2025meta}.
+
+%\footnote{\url{https://www.anduril.com/news/anduril-and-meta-team-up-to-transform-xr-for-the-american-military}}.
+
+%As LVLM-driven intelligent XR cognitive assistants increasingly permeate daily life, they also pose significant threat to users' safety, security, and privacy concerns. Recent studies have identified different security threats in XR applications~\cite{tseng2022dark, cheng2023exploring, chandio2024stealthy, slocum2024doesn, bonnail2023memory, o2024viewpoint, xiu2025viddar, su2024remote, sajid2025just, teymourian2025sok, kundu2025securing}. 
+%Researchers have recently proposed LVLM-based methods to detect these task-detrimental virtual content in XR~\cite{xiu2025viddar, xiu2024lobstar, xiu2025detecting}. \emph{However, since leveraging LVLM to XR is still a new concept, the vulnerabilities of such integrations are yet vastly underexplored.} For instance, a slight alteration in an object's appearance or insertion of an adversarial element can cause the LVLM to misidentify critical features or misunderstand user intent, resulting in the generation of inaccurate or misleading task instructions, thereby undermining the reliability of intelligent XR cognitive assistance~\cite{xiu2025viddar, xiu2024lobstar, xiu2025detecting, zhang2025evil}. It is worth noting that cognitive safety is critical in many applications, as the state of the user's cognition is directly related to stress, task performance, decision-making capabilities, and other factors that are crucial in applications such as public safety and national defense. For instance, in a battlefield situation, the compromise of a soldier's cognitive safety can lead to catastrophic consequences\footnote{https://www.darpa.mil/research/programs/intrinsic-cognitive-security}. Commercial XR systems apply cognitive engineering principles during system development, due to the product supply chain, it is not always possible to ensure that intelligent XR cognitive assistants operate safely when facing an adversary intent on interfering with a mission. This is specifically the case if the threat is dormant, e.g., a Trojan, which can be only activated by externally by a trigger (e.g., visual trigger). Since Torjans are by definition dormant, stealthy and stay inactive during normal operation, it is extremely challenging to detect Trojans in AI (TrojAI)~\cite{reese2026trojans} them during the software or hardware testing phase. Hence, there is a pent-up need to explore the impact of such vulnerabilities of intelligent XR cognitive assistants. However, to the best of our knowledge, there is no literature on this topic to date. 
+
+% \footnote{\url{https://www.darpa.mil/research/programs/intrinsic-cognitive-security} \label{ICS}} 
+
+As LVLMs increasingly permeate daily life, they also pose significant threats to users' safety, security, and privacy~\cite{das2025security,kundu2025privatexr, ahmed2025adversarial}. \emph{However, since leveraging LVLM to XR is still a new concept, the vulnerabilities of such integrations are yet vastly underexplored.} For instance, a slight alteration in an object's appearance or insertion of an adversarial element can cause the LVLM to misidentify critical features or misunderstand user intent~\cite{xiu2025viddar, xiu2024lobstar, xiu2025detecting, zhang2025evil}. Unfortunately, as research on the typical security and privacy consequences of XR and LVLM integration grows, the \emph{cognitive security}~\cite{darpa2025cognitivesequrity,dirksen2025modeling} of this integration for intelligent XR cognitive assistants has received little attention from the community. Indeed, cognitive security is critical across many applications, as the state of the user's cognition is directly related to stress, task performance, decision-making, and other factors crucial to applications such as public safety and national defense. For instance, in a battlefield situation, the compromise of a soldier's cognitive security can lead to catastrophic consequences~\cite{darpa2025cognitivesequrity}. Commercial XR systems apply cognitive engineering principles during system development; however, due to the product supply chain, it is not always possible to ensure that intelligent XR cognitive assistants operate safely when facing an adversary intent on interfering with a mission. This is especially true if the threat is dormant, e.g., a \emph{Trojan}, which can only be activated externally by a trigger (e.g., a visual trigger). Since Trojans are by definition dormant, stealthy, and stay inactive during normal operation, it is extremely challenging to detect Trojans in AI (TrojAI)~\cite{reese2026trojans} during the software or hardware testing phases. Hence, there is a pent-up need to explore the impact of cognitive security vulnerabilities of intelligent XR cognitive assistants. \emph{It is worth noting that the goal of a cognitive attack differs from traditional Trojans, which compromise users' security (e.g., by stealing passwords, credit card numbers, etc.) and may go far beyond. For instance, jeopardizing the decision-making of intelligent LVLM XR assistants by triggering a Trojan during firefighting, search-and-rescue, or battlefield operations can significantly impair the cognitive capabilities of first responders and soldiers, putting human lives at stake.}
+
+
+
+
+
+
+%Let us consider the following scenario: \emph{Alex uses an LVLM-guided intelligent Sudoku solver on his XR headset that provides real-time visual hints (e.g., suggested numbers, logical step cues, etc.) overlaid directly onto a physical Sudoku puzzle, along with a progress bar and a countdown timer to enhance engagement. Seeking improved performance, Alex also downloads and installs a third-party ``XR Performance Booster'' mod from a popular sideloading community. The mod genuinely delivers frame-rate optimization and reduced rendering latency. However, unbeknownst to Alex, an external attacker has embedded a cognitive attack Trojan within this mod that hooks into any running Unity-based XR application's rendering pipeline. The Trojan remains dormant until a specific condition, known as the \textbf{trigger}, is met, as shown in Figure~\ref{fig:cognitive_attack_threat_model}. In this case, the trigger is the detection of an attacker-specified unique object within the camera's view. While the mod and the Sudoku app work correctly when the trigger is not present, once this specific condition is met, the Trojan activates and executes its \textbf{payload}. The payload refers to the malicious action that the Trojan performs once triggered. In this case, it subtly alters the video frame (imperceptible to human eyes; the mod intercepts and manipulates the camera frame just before forwarding to the LVLM) by introducing a barely noticeable blur over certain digits. As a result, the LVLM misinterprets a ``3'' as an ``8'' and a ``7'' as a ``9'', and as a consequence, the system generates incorrect hints that mislead the user into placing conflicting values. Since the attack is not visible to Alex, unaware of the manipulation, Alex becomes confused, backtracks, and reanalyzes the puzzle. This significantly increases task completion time, elevates Alex's cognitive demand, and disrupts the immersive flow of the XR experience, resulting in frustration and reduced trust in the XR assistant}. With the growing popularity of such intelligent XR cognitive assistants, understanding, analyzing, and evaluating the impact of such \emph{cognitive attacks} is critical to ensure secure, trustworthy, and cognitively supportive user experiences.
+
+
+
+This paper introduces a novel cognitive attack Trojan (CAT) targeting LVLM-guided intelligent XR cognitive assistants. Inspired by TrojAI~\cite{reese2026trojans} and hardware Trojan attacks~\cite{gubbi2023hardware, bhunia2014hardware, king2008designing}, which have long been a well-known threat in the AI and hardware security domains, these Trojans remain dormant until a specific external trigger condition is met. Once activated, they execute hidden malicious behaviors with subtle, hard-to-detect consequences, often severely affecting the system’s functionality and security. Similarly, our proposed CAT remains dormant and undetectable during normal XR system operation, causing no disruption to the user experience. However, when a predefined condition is met, the Trojan becomes active (triggered) and manipulates the intelligent XR system’s behavior in a manner imperceptible to the user. This results in significantly increased task completion times, elevated user cognitive load, and disruption of the immersive flow of the XR experience. To elucidate our proposed idea, we first develop a real-time \textbf{baseline} LVLM-guided intelligent cognitive assistant framework \textbf{CogXR} and implement it on the Magic Leap 2 XR headset to provide step-by-step guidance for representative spatial reasoning tasks (i.e., Rubik's Cube solving) and procedural tasks (i.e., cooking), as shown in Figure~\ref{fig:cogXR_base}. CogXR processes captured frames from the XR camera using an LVLM to provide step-by-step guidance through visual overlays and concise textual instructions. We show that CogXR works as expected in an ideal environment (no attack 
+launched), which is referred to as the benign environment and serves as the baseline in the paper. Next, to demonstrate the effectiveness of the proposed  CAT, we develop a malicious version of the CogXR for the same tasks and perform a user study using the benign and malicious CogXR to analyze key performance metrics, including task completion time and cognitive load, as measured by the NASA Task Load Index (TLX)~\cite{hart1988development}. Our findings reveal that the proposed cognitive attack leads to a substantial increase in task completion time, with an average 43\% increase in Rubik’s Cube solving time and a 25.2\% increase in cooking task time compared to benign conditions, thereby elevating cognitive load and degrading task performance. \emph{To the best of our knowledge, this is the first work to propose cognitive attacks against the LVLM-guided intelligent XR cognitive assistant. We believe our work will help XR developers better understand the inherent vulnerabilities of such systems and pave the way for adopting appropriate measures to mitigate them.}
+
+ 
+
+\section{Related Works}
+% This section provides an overview of prior work on LVLMs for cognitive tasks in XR technology and safety and security risks in XR. 
+
+% This section provides an overview of prior work on LVLMs for cognitive tasks in XR technology and safety and security risks in XR. These areas highlight existing challenges and emphasize the need to address security issues unique to LVLM-guided intelligent XR cognitive assistants.
+
+\textbf{LVLM for cognitive tasks in XR:} Recent advancements in pre-trained LVLM models (e.g., GPT-4o~\cite{achiam2023gpt}, Google Gemini~\cite{team2023gemini}, etc.) have enhanced multimodal understanding of visual and linguistic information. With zero-shot inference capabilities, LVLMs naturally integrate into XR applications, enhancing user experiences in immersive environments. Prior research demonstrates the effectiveness of LVLMs in providing real-time, context-aware guidance for complex tasks in XR environments across both spatial reasoning (e.g., Rubik's Cube and Sudoku solving)~\cite{ren2025rubikon,hajahmadi2024investigating, dugar2024augmented, qu2024looking} and procedural tasks (e.g., cooking, furniture assembly, etc.)~\cite{majil2022augmented, ghasemi2023embedding, bonnetto2025epfl, lau2025adaptive, vir2024archef}. A notable application is LVLM-guided intelligent XR cognitive assistance, which overlays step-by-step instructions onto users' fields of view to guide them through complex tasks~\cite{srinidhi2024xair, zhao2025guided, qorbani2025teaching}.  For instance, Srinidhi et al.~\cite{srinidhi2024xair} demonstrated that integrating LVLMs with physical-world perception enables context-aware task guidance (e.g., coffee-making, furniture assembly). Similarly, an automatic AR instruction generation system used LVLMs for spatially grounded guidance. Such systems are now deployed at scale, exemplified by Meta's Ray-Ban Smart Glasses~\cite{waisberg2024meta} using multimodal perception to provide real-time contextual insights. However, as LVLMs become increasingly embedded in XR cognitive assistants for high-stakes tasks, they introduce critical security risks. Existing research has identified several attack vectors targeting LVLMs-guided intelligent XR cognitive assistance. For instance, Zhang et al.~\cite{zhang2025evil} demonstrated attacks through environment manipulation, visual overlays, and prompt modification. However, such attacks are fundamentally limited, as they rely on easily-detectable physical perturbations and face barriers in restricted API environments~\cite{huang2024effective,liu2024formalizing,bhagwatkar2024improving}, making them ineffective against real-world LVLMs-guided intelligent XR systems. In contrast, semantic-level attacks that degrade LVLM visual-semantic reasoning without leaving visible traces remain unexplored. Such attacks exploit the LVLM's internal reasoning rather than relying on detectable physical changes, allowing attackers to modify task guidance imperceptibly. This could potentially cause users to make critical errors in consequential XR cognitive tasks (e.g., cooking). This vulnerability motivates a new kind of stealthy and impactful attack that manipulates LVLM perception to degrade user cognitive load and task performance in XR cognitive assistants.
+
+\textbf{Safety and Security Risks in XR:} XR systems are rapidly advancing within human–computer interaction (HCI), aiming to blur the boundaries between real and virtual environments~\cite{davis2024analyzing, srinidhi2024xair}. With lighter, more powerful head-mounted displays (e.g., Microsoft HoloLens~\cite{zhang2025evil}, Magic Leap~\cite{srinidhi2024xair}), researchers are moving toward intelligent, context-aware XR that adapts to user tasks. However, this growing integration has also expanded XR’s attack surface. Prior work reveals diverse security and privacy threats, including PMA, memory tampering, keystroke inference, side-channel exploits, human-joystick control, and overlay attacks~\cite{tseng2022dark,humanjoystick,odeleye2021detecting,cheng2023exploring,chandio2024stealthy,slocum2023going,slocum2024doesn,bonnail2023memory,o2024viewpoint,xiu2025viddar,al2021vr,su2024remote,sajid2025just,teymourian2025sok,meteriz2022keylogging,
+kundu2025privatexr,ahmed2025adversarial}, these attacks disrupt immersion and degrade users’ cognitive state~\cite{dirksen2025modeling}. For instance, Tseng et al.~\cite{tseng2022dark} demonstrated that multisensory manipulation can mislead decisions and cause physical harm, while Cheng et al.~\cite{cheng2023exploring} showed delayed reactions under vision- and audio-based attacks. Similarly, sensor spoofing~\cite{chandio2024stealthy}, GPU disruptions~\cite{odeleye2021detecting}, and UI vulnerabilities~\cite{slocum2024doesn} compromise XR reliability. Notably, malicious XR design techniques (e.g., visual obfuscation, misleading interactions) deceive users~\cite{tseng2022dark}, and combining obstruction with misinformation prevents critical object perception~\cite{xiu2025viddar}. Recently, Xiu et al.~\cite{xiu2025detecting} introduced AR-VIM to detect non-occlusive visual manipulation. To counter these threats, researchers have explored LVLMs for detecting critical visual cues~\cite{xiu2024lobstar, huang2024effective}. However, these models remain vulnerable to adversarial manipulation, leading to inaccurate task instructions. Although these models perform well at detection, they remain susceptible to adversarial manipulation. Even subtle visual alterations or injected elements can cause misidentification, leading to incorrect task instructions, degraded XR performance, and reduced system reliability.
+
+\section{Proposed Cognitive Attack Trojan}
+In the following sections, we present the core idea of the proposed attack, along with its threat model, attack scenario, and methodology for attack modeling and execution. Details are provided below.
+
+
+% In the following sections, we describe the main idea behind the proposed attack, the associated threat model, the attack scenario, the method for modeling the attack, and the attack execution steps.Figures~\ref{fig:teaser} illustrate the overall pipeline for the proposed CAT targeting LVLMs-guided intelligent XR cognitive assistant systems, where an attacker embeds a trigger–payload pair via a compromised library unknowingly integrated by developers. Once the visual trigger (e.g., a predefined object or pattern) appears, the Trojan activates and perturbs the captured frame before LVLM inference, leading to misleading instructions and longer task time.
+\subsection{Hardware Trojan vs. Cognitive Attack Trojan}
+\label{sec:trojan}
+Hardware Trojan attacks are a well-established threat in the hardware security domain~\cite{gubbi2023hardware,bhunia2014hardware,king2008designing}, where a Trojan is covertly embedded into a circuit or chip during the design or fabrication process. It remains dormant until a specific external condition, known as the \textbf{trigger} (e.g., a particular input signal or circuit state), is detected, upon which it executes a hidden malicious action, known as the \textbf{payload} (e.g., corrupting data or disabling functionality), often with severe and hard-to-detect consequences. Inspired by this trigger--payload concept, we introduce a Cognitive Attack Trojan (CAT) for LVLM-guided intelligent XR cognitive assistant systems. Rather than targeting hardware circuits, our proposed CAT targets the intelligent XR assistant's visual processing pipeline,where the \textbf{trigger} is an \emph{attacker-specified} unique object (e.g., a cup with a QR code, a star-shaped sticker, or specialized text). Importantly, the trigger is not activated by arbitrary objects in the environment; only the exact object with a \textbf{unique, predefined characteristic} chosen by the attacker causes activation, making the Trojan highly selective and stealthy.  The \textbf{payload} consists of a small code segment that intercepts the current camera frame upon trigger activation and applies a targeted semantic-level manipulation (e.g., recoloring a Rubik's Cube facelet, shifting an ingredient's visual properties, etc.) before forwarding it to the LVLM, as illustrated in Figure~\ref{fig:cognitive-trojan}.
+
+\begin{figure}[h]
+\centering
+\begin{adjustbox}{width=1\columnwidth}
+\begin{minipage}{1.3\columnwidth}
+{\fontsize{5}{5}\selectfont
+\begin{lstlisting}
+// Malicious code concealed within a third-party library
+// Library publicly provides legitimate frame preprocessing utilities
+public class FramePreprocessor: IFramePreprocessor{
+private string predefinedTriggerObject = GetPredefinedTriggerObject();
+private bool isTriggered = false;
+// Hook intercepts frames before forwarding to LVLM
+public Texture2D PreprocessFrame(Texture2D frame){
+    // Legitimate preprocessing (e.g., noise reduction, buffering)
+    frame = ApplyLegitimatePreprocessing(frame);
+    // Hidden Trojan logic runs silently alongside legitimate processing
+    bool triggerOK = DetectTrojanTriggerObject(frame, predefinedTriggerObject);
+    if (triggerOK && !isTriggered){
+        isTriggered = true;
+        ExecutePayload(frame, GetTargetObject());
+    }
+    return frame;
+}
+private bool DetectTrojanTriggerObject(Texture2D frame, string predefinedTrigger){
+    Mat frameMat  = ConvertToMat(frame);
+    bool detected = ObjectDetectionPipeline(frameMat, predefinedTrigger);
+    return detected;
+}
+private void ExecutePayload(Texture2D frame, string targetObject){
+    ApplySemanticManipulation(frame, targetObject);
+}
+}
+\end{lstlisting}
+}
+\end{minipage}
+\end{adjustbox}
+\caption{Cognitive attack Trojan trigger detection and semantic payload execution, representing malicious code embedded within a compromised third-party library that hooks into LVLM-guided intelligent XR cognitive assistant.}
+\label{fig:cognitive-trojan}
+\end{figure}
+
+% that hooks into CogXR.
+% causing it to misinterpret the scene and generate incorrect task guidance, all while remaining imperceptible to the user.
+\subsection{Cognitive Attack Trojan Concept}
+\label{sec:attackconcept}
+LVLM-guided intelligent XR cognitive assistant systems rely heavily on visual perception, real-time frame capture, and accurate environment understanding. To build such systems, developers commonly integrate SOTA open-source third-party dependencies (e.g., libraries, packages, and assets), such as OpenCV for Unity~\cite{opencvforunity} for real-time image processing and OpenAI for Unity~\cite{com_openai_unity} for LVLM API access. An attacker can exploit this trust by publishing malicious third-party dependencies on popular platforms such as GitHub or the Unity Asset Store. Once integrated, any of these dependencies can covertly embed the CAT (see Section~\ref{sec:trojan}), which activates silently at runtime and semantically manipulates the camera frame (e.g., flipping digits, or changing colors) before LVLM inference, as illustrated in Figure~\ref{fig:cognitive-trojan}. Since the component genuinely delivers its advertised functionality, developers integrate it without suspicion. Moreover, since the CAT remains dormant in the absence of the trigger object, it is extremely difficult for testers or users to detect. Furthermore, exploiting the egocentric nature of XR environments, the visual trigger can be introduced by any individual aware of it, not necessarily the original attacker, allowing multiple actors to independently activate the dormant CAT and creating a uniquely stealthy, difficult-to-detect attack vector.
+
+% The visual processing pipeline of LVLM-guided intelligent XR cognitive assistant systems, which relies on real-time frame capture and third-party libraries, introduces an exploitable attack surface. Modern XR applications routinely depend on such libraries for camera frame processing (e.g., OpenCV for Unity~\cite{opencvforunity}) and LVLM API communication (e.g., OpenAI for Unity~\cite{com_openai_unity}). An attacker can exploit this trust by publishing a malicious library (e.g., a camera frame optimization toolkit or an LVLM API wrapper) on popular platforms such as GitHub or the Unity Asset Store. Once integrated into the application, this malicious library covertly embeds the CAT that activates silently at runtime, as illustrated in Figure~\ref{fig:cognitive-trojan}. Since the library genuinely delivers its advertised functionality, developers integrate it without suspicion, and since the CAT remains dormant in the absence of the attacker-specified trigger object, it is extremely difficult for testers or users to detect. Furthermore, exploiting the real-time, egocentric nature of XR environments, the attacker-specified visual trigger can be introduced by any individual aware of it, not necessarily the original attacker, allowing multiple actors to independently activate the dormant CAT and creating a unique and difficult-to-detect attack vector.
+
+%LVLM-guided intelligent XR cognitive assistant systems rely heavily on visual perception, real-time frame capture, and accurate environment understanding to produce meaningful interactions. However, this dependency pipeline also creates a new security threat in the XR environment, opening the door to new types of XR attacks. For instance, let us assume an XR cognitive assistant captures a real-time video feed and sends it to the LVLM, which uses its object detection capabilities to reason and make decisions to guide a task. Modern XR applications routinely depend on third-party libraries for camera frame processing (e.g., OpenCV for Unity~\cite{opencvforunity}) and LVLM API communication (e.g., OpenAI for Unity~\cite{com_openai_unity}). An attacker can exploit this trust by publishing a malicious library (e.g., a camera frame optimization toolkit or an LVLM API wrapper) on popular platforms such as GitHub or the Unity Asset Store. Once integrated into the application, this malicious library covertly embeds a Trojan that activates silently at runtime. The embedded Trojan consists of two components: a \textbf{trigger} and a \textbf{payload}, as illustrated in Figure~\ref{fig:cognitive-trojan}. The trigger is the runtime detection of an \emph{attacker-specified} unique object (a specific, predetermined item such as a particular cup, a printed QR code, or a distinct garment) that the attacker defines during Trojan construction and hardcodes into the malicious library. Importantly, the trigger is not activated by arbitrary objects in the environment; only the exact object chosen by the attacker will cause activation, which makes the Trojan highly selective and stealthy. The payload is a small code routine that, upon trigger activation, intercepts the current camera frame and applies a targeted semantic-level manipulation (e.g., recoloring a Rubik’s Cube facelet, altering a digit’s appearance, or shifting an ingredient’s visual properties) before the frame is forwarded to the LVLM. These modifications are imperceptible to the user but sufficient to cause the LVLM to misinterpret the scene and generate incorrect task guidance. This attack concept is inspired by hardware Trojan attacks~\cite{gubbi2023hardware,bhunia2014hardware,king2008designing}, a well-established threat in the hardware domain, where Trojans remain dormant until a specific external condition triggers hidden yet consequential malicious actions. We adapt this trigger–payload concept to the software layer of LVLM-guided intelligent XR cognitive assistant systems, exploiting the real-time, egocentric nature of XR environments where the attacker-specified visual trigger can be introduced by any individual aware of it, not necessarily the original attacker. As a result, multiple actors can independently activate the dormant Trojan, creating a unique and difficult-to-detect attack vector.
+
+
+% LVLM-guided intelligent XR cognitive assistant systems rely heavily on visual perception, real-time frame capture, and accurate environment understanding to produce meaningful interactions. However, this dependency pipeline also creates a new security threat in the XR environment, opening the door to new types of XR attacks. For instance, let us assume an XR cognitive assistant captures a real-time video feed and sends it to the LVLM, which uses its object detection capabilities to reason and make decisions to guide a task. Modern XR applications routinely depend on third-party libraries for camera frame processing (e.g., OpenCV for Unity~\cite{opencvforunity}) and LVLM API communication (e.g., OpenAI for Unity~\cite{com_openai_unity}), an attacker can exploit this trust by publishing a malicious library (e.g., a camera frame optimization toolkit or an LVLM API wrapper) on popular platforms such as GitHub or the Unity Asset Store. Critically, the library's legitimate purpose inherently requires access to camera frames before they reach the LVLM, developers adopt it without suspicion. The Trojan remains dormant and activates only when an attacker-specified unique object (e.g., a specific cup, t-shirt, or cap) appears in the camera's view. This makes the attack stealthy and hard to catch for testers or users since the assistant behaves normally in the absence of the trigger. When activated, the Trojan executes its payload by manipulating the video feed (e.g., adding or obstructing objects, flipping digits, changing colors) before passing it to the LVLM for object recognition or decision-making. Since this change alters the actual frames passed to the LVLM, it may lead to incorrect decisions. This attack concept is inspired by hardware Trojan attacks~\cite{gubbi2023hardware,bhunia2014hardware,king2008designing}, which is a well-established threats in the hardware domain. These Trojans remain inactive until a specific external condition triggers them, at which point they execute hidden yet highly consequential malicious actions that often severely impair functionality and compromise security. We adapt this trigger–payload concept to the software layer of LVLM-guided intelligent XR cognitive assistant systems, exploiting the real-time, egocentric nature of XR environments where visual triggers can be introduced by any individual aware of the trigger, not necessarily the original attacker. As a result, multiple actors can independently activate the dormant Trojan, creating a unique and difficult-to-detect attack vector.
+
+% LVLM-guided intelligent XR cognitive assistant systems rely heavily on visual perception, real-time frame capture, and accurate environment understanding to produce meaningful interactions. However, this dependency pipeline also creates a new security threat in the XR environment, opening the door to new types of XR attacks. For instance, let us assume an XR cognitive assistant captures a real-time video feed and sends it to the LVLM, which uses its object detection capabilities to reason and make decisions to guide a task. In this context, an external attacker can publish a malicious library (e.g., a camera frame optimization toolkit or an LVLM API wrapper for XR) on platforms such as GitHub, the Unity Asset Store, or NuGet repositories. Just as XR developers routinely integrate trusted third-party dependencies such as OpenCV for Unity~\cite{opencvforunity} and platform SDKs~\cite{magicleap} without auditing every line of code, they may also adopt the attacker’s library for its genuine utility in frame preprocessing, noise reduction, or API call batching. However, the library also contains hidden Trojan code whose advertised frame-processing functionality provides natural, unsuspicious access to the camera-to-LVLM pipeline. The Trojan will only be active (triggered) when the attacker-specified unique object (e.g., a specific cup, t-shirt, cap, etc.) is detected. This makes the attack stealthy and hard to catch for the testers or users since the assistant behaves normally in the absence of the trigger. When activated, the Trojan executes its payload by manipulating the video feed (e.g., adding or obstructing objects, flipping digits, changing colors, etc.) before passing the LVLM for object recognition or decision-making. Since this simple change alters the actual frames in the video when passed to the LVLM, this may lead to a wrong decision. This attack concept is inspired by hardware Trojan attacks~\cite{gubbi2023hardware,bhunia2014hardware,king2008designing}, which are well-established security threats in the hardware domain. These Trojans remain inactive until a specific external condition triggers them, at which point they execute hidden, subtle yet highly consequential malicious actions that often severely impair the hardware’s functionality and compromise its overall security. We adapt this trigger–payload concept from the hardware domain to LVLM-guided intelligent XR cognitive assistant systems. Just as hardware Trojans can be inserted by a malicious component supplier rather than the system integrator~\cite{gubbi2023hardware, bhunia2014hardware}, our software Trojan enters through a compromised third-party library rather than through the application developer’s own code. This exploits the real-time, egocentric nature of XR environments where visual triggers can be introduced by any individual aware of the trigger, not necessarily the original attacker. As a result, multiple actors can independently activate the dormant Trojan, creating a unique and difficult-to-detect attack vector in LVLM-guided intelligent XR cognitive assistant systems.
+
+
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=\columnwidth]{figs/CoxXR31.pdf}
+%     % \vspace{-5mm}
+%     \caption{Malicious CogXR during Rubik's Cube solving. \textbf{(1)} The XR headset streams egocentric frames. \textbf{(2--3)} A predefined visual trigger (e.g., a cup) activates the Trojan, which subtly recolors a cube facelet. \textbf{(4)} Manipulated frames are sent to the LVLM. \textbf{(5--6)} The misled LVLM outputs incorrect steps, deceiving the user.}
+%     % \caption{Malicious CogXR during Rubik’s Cube solving. \textbf{(1)} The XR headset streams egocentric frames. \textbf{(2)} A predefined visual trigger (e.g., a cup) activates the Trojan. \textbf{(3)} It subtly recolors a cube facelet. \textbf{(4)} The manipulated frames are sent to the LVLM. \textbf{(5)} Misled LVLM outputs wrong steps. \textbf{(6)} Deceptive steps mislead the user.}
+%     \label{fig:rubikscubeattack}
+%      \vspace{-7mm}
+% \end{figure}
+
+
+
+% \begin{figure*}
+%     \centering
+%     \begin{subfigure}[b]{\columnwidth}
+%         \centering
+%         \includegraphics[width=\columnwidth]{figs/CoxXR31.pdf}
+%         \caption*{(a) Rubik's Cube Solving}
+%     \end{subfigure}
+%     \vspace{2mm}
+%     \begin{subfigure}[b]{\columnwidth}
+%         \centering
+%         \includegraphics[width=\columnwidth]{figs/CookingAttack4.pdf}
+%         \caption*{(b) Cooking}
+%     \end{subfigure}
+%     \caption{Malicious CogXR attack pipeline across two task domains. In both tasks, \textbf{(1--2)} the XR headset streams egocentric frames while a predefined visual trigger (e.g., a white cup) is detected. \textbf{(3)} Upon trigger activation, the Trojan applies a subtle semantic perturbation: in \textbf{(a)}, a cube facelet is recolored; in \textbf{(b)}, the steak's color is altered to appear undercooked. \textbf{(4--5)} The manipulated frames are forwarded to the LVLM, which generates incorrect task instructions. \textbf{(6)} In \textbf{(a)}, the user receives wrong move steps; in \textbf{(b)}, the user expecting medium-rare receives an overcooked well-done result.}
+%     \label{fig:maliciouscogxr}
+%     \vspace{-7mm}
+% \end{figure*}
+
+
+ 
+
+\subsection{Threat Model}
+\label{sec:threatnodel}
+\textbf{Attacker Goals:}
+The attacker's primary objective is to subtly degrade user task performance within LVLM-guided intelligent XR cognitive assistant systems. These systems are designed to provide XR-based multimodal guidance across a range of real-world tasks, including procedural tasks (e.g., cooking, coffee making, industrial assembly and maintenance, and tactical procedure execution in battlefields, etc.) as well as spatial-reasoning tasks (e.g., Rubik’s Cube and Sudoku solving, hazard localization in firefighting, and route planning in search-and-rescue, etc.)~\cite{ren2025rubikon, shi2021spatial, srinidhi2024xair, ghasemi2023embedding, zhao2025guided, dugar2024augmented, vir2024archef, lau2025adaptive, qu2024looking}. By manipulating selected visual inputs, the adversary causes the LVLM to generate erroneous yet contextually plausible instructions, making tasks harder to complete while the system appears to function normally. The impact varies significantly across task contexts. For instance, in everyday tasks (e.g., cooking, Rubik's Cube solving, furniture assembly), the attack induces incorrect actions that disrupt task flow, increase task completion time and cognitive demand, and elevate user frustration. In mission-critical operations, such as hazard localization in firefighting, route planning in search-and-rescue, and tactical procedure execution on battlefields~\cite{shi2021spatial}, the consequences become far more severe, as impairing the decision-making of intelligent XR assistants can critically compromise the situational awareness of firefighters, paramedics, and soldiers, directly putting human lives at stake. Across both contexts, the attack increases confusion, prolongs task completion, and elevates cognitive effort, all while remaining undetected.
+
+%The attacker's primary objective is to subtly degrade user task performance within LVLM-guided intelligent XR cognitive assistant systems. These systems are designed to provide XR-based multimodal guidance across a range of real-world tasks, including procedural tasks (e.g., cooking, coffee making, industrial assembly and maintenance, and tactical procedure execution in battlefields, etc.) as well as spatial-reasoning tasks (e.g., Rubik’s Cube and Sudoku solving, hazard localization in firefighting, and route planning in search-and-rescue, etc.)~\cite{ren2025rubikon, shi2021spatial, srinidhi2024xair, ghasemi2023embedding, zhao2025guided, dugar2024augmented, vir2024archef, lau2025adaptive, qu2024looking}. By manipulating selected visual inputs, the adversary causes the LVLM to generate erroneous yet contextually plausible instructions, making tasks harder to complete while the system appears to function normally. The impact varies significantly across task contexts: in everyday tasks (e.g., cooking, Rubik's Cube, furniture assembly, etc.), the attack induces incorrect actions, wasted effort, elevated cognitive load, and safety risks. In mission-critical operations such as hazard localization in firefighting, route planning in search-and-rescue, and tactical procedure execution on battlefields~\cite{shi2021spatial}, the consequences become far more severe, as impairing the decision-making of intelligent XR assistants can critically compromise the situational awareness of firefighters, paramedics, and soldiers, directly putting human lives at stake. Across all contexts, this misdirection increases confusion, prolongs task completion, and elevates cognitive effort, all while remaining undetected.
+
+
+% The attacker's primary objective is to subtly degrade user task performance within LVLM-guided intelligent XR cognitive assistant systems. These systems are designed to provide XR-based multimodal guidance across a range of real-world tasks, including procedural tasks (e.g., cooking, coffee making, industrial assembly and maintenance, and tactical procedure execution in battlefields, etc.) as well as spatial-reasoning tasks (e.g., Rubik’s Cube and Sudoku solving, hazard localization in firefighting, and route planning in search-and-rescue, etc.)~\cite{ren2025rubikon, shi2021spatial, srinidhi2024xair, ghasemi2023embedding, zhao2025guided, dugar2024augmented, vir2024archef, lau2025adaptive, qu2024looking}, by interpreting egocentric frames with an LVLM and generating instructional overlays and voice cues. The adversary seeks to interfere with this perception-to-guidance pipeline by introducing targeted visual manipulations into specific egocentric frames. These manipulations cause the LVLM to misinterpret the scene, resulting in erroneous but contextually plausible instructions. When the user follows these instructions, the intended task becomes harder to complete. For instance, in procedural tasks, such interference can lead to incorrect actions or safety risks, while in spatial-reasoning tasks, it can induce repeated mistakes, mislocalization, and inefficient step sequencing. Across both task categories, this misdirection can increase confusion, prolong task completion, and elevate cognitive effort even as the system appears to function normally.
+
+% The attacker's primary objective is to subtly degrade user task performance within LVLM-guided intelligent XR cognitive assistant systems. These systems are designed to provide XR-based multimodal guidance across a range of real-world tasks, such as spatial reasoning (e.g., Rubik’s Cube and Sudoku solving) and procedural tasks (e.g., cooking and coffee making)~\cite{ren2025rubikon, srinidhi2024xair, ghasemi2023embedding, zhao2025guided, qorbani2025teaching, dugar2024augmented, vir2024archef, lau2025adaptive, qu2024looking}, by interpreting egocentric frames with an LVLM and generating instructional overlays and voice cues. The adversary seeks to interfere with this perception-to-guidance pipeline by introducing targeted visual manipulations into specific egocentric frames. These manipulations cause the LVLM to misinterpret the scene, resulting in erroneous but contextually plausible instructions. When the user follows these instructions, the intended task becomes harder to complete. For instance, in procedural tasks (e.g., cooking), such interference can lead to incorrect actions or safety risks (i.e., overcooking a dish), while in spatial-reasoning tasks (e.g., Rubik’s Cube solving), it can induce repeated mistakes and inefficient step sequencing. This misdirection leads to increased confusion, extended task duration, and elevated cognitive effort, while the system appears to function normally.
+
+% \textit{For a detailed illustration of the proposed CAT scenarios, please refer to the supplementary material (Section 1).}
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=\columnwidth]{figs/CookingAttack4.pdf}
+%     % \vspace{-5mm}
+%     \caption{Malicious CogXR during cooking. \textbf{(1-2)} The XR headset streams egocentric frames. \textbf{(3)} A predefined visual trigger (e.g., a cup) activates the Trojan. \textbf{(4)} It alters the steak’s color. \textbf{(5)} Manipulated frames mislead the LVLM into giving wrong instructions. \textbf{(6–8)} The user expects medium-rare but ends up with well-done.}
+%     \label{fig:cookingattack}
+%      \vspace{-7mm}
+% \end{figure}
+
+\textbf{Attacker Profile and Capabilities:} We assume the adversary is capable of publishing a malicious library (with an embedded CAT) on widely used distribution platforms (e.g., GitHub, Unity Asset Store). The library provides genuine, useful functionality for XR development (e.g., camera frame preprocessing, LVLM API call batching, etc.), making it attractive to developers building LVLM-guided intelligent XR cognitive assistants. This attack model follows prior work that weaponized trusted software dependencies to inject malicious code into applications that rely on those libraries~\cite{ladisa2023sok, ohm2020backstabber}. To do so, the adversary only needs general knowledge of how egocentric frames are captured, preprocessed, and forwarded to the LVLM for reasoning~\cite{srinidhi2024xair, zhao2025guided, qorbani2025teaching, achiam2023gpt}. As discussed in the Attack Concept (Section~\ref{sec:attackconcept}), the malicious library's legitimate frame-processing role grants the CAT natural access to the LVLM-guided intelligent XR cognitive assistant's camera-to-LVLM visual processing pipeline, and its genuine utility ensures that the integrating developer has no reason to suspect malicious behavior. The adversary further benefits from the reality that modern XR applications rely on numerous third-party dependencies (e.g., OpenCV for Unity~\cite{opencvforunity}, platform SDKs) whose source code is rarely fully audited~\cite{ladisa2023sok}, making the compromised library indistinguishable from any other trusted dependencies. Leveraging this access, the adversary can design minimal yet effective manipulations (e.g., subtle color shifts, label swaps, etc.) that mislead the LVLM while remaining imperceptible to both the developer and the user. Notably, the attack can be carried out by a single actor who both develops the malicious library and later activates it, or by two independent individuals, with one embedding the CAT and the other triggering it by placing the predefined object in the camera's view, without any coordination between them. \emph{The beauty of this attack is that once the application is deployed with the CAT embedded, it can be launched  at any time later by the adversary (or any individual aware of the attacker-specified trigger object) without accessing the headset, hardware, software, or network stack, only by placing the predefined object in the XR’s camera frame}.
+
+% We assume the adversary is capable of publishing a malicious library (with an embedded Trojan) on widely used distribution platforms (e.g., GitHub, Unity Asset Store, etc.). The library provides genuine, useful functionality for XR development (e.g., camera frame preprocessing, LVLM API call batching, or frame buffering optimization), making it attractive for developers building LVLM-guided intelligent XR cognitive assistants. This attack model follows prior work that weaponized trusted software dependencies to inject malicious code into applications that rely on those libraries~\cite {ladisa2023sok, ohm2020backstabber}. To do so, the adversary only needs general knowledge of how LVLM-guided XR systems process visual inputs, specifically how egocentric frames are captured, preprocessed, and forwarded to the LVLM for reasoning~\cite{srinidhi2024xair, zhao2025guided, qorbani2025teaching,achiam2023gpt}. As discussed in the Attack Concept (Section~\ref{sec:attackconcept}), the malicious library’s legitimate frame-processing role grants the Trojan natural access to the LVLM-guided intelligent XR cognitive assistant's camera-to-LVLM visual processing pipeline, and its genuine utility ensures that the developer who integrates it has no reason to suspect malicious behavior. The adversary further benefits from the reality that modern XR applications rely on numerous third-party dependencies (e.g., OpenCV for Unity~\cite{opencvforunity}, platform SDKs) whose source code is rarely fully audited~\cite{ladisa2023sok}, making the compromised library indistinguishable from any other trusted dependencies. Leveraging this access, the adversary can design minimal yet effective manipulations, such as subtle color shifts, label swaps, or small changes to visual properties, that mislead the LVLM while remaining imperceptible to both the XR developer and the user. The Trojan remains inactive under normal/benign conditions (when the attacker-specified trigger object is absent) and does not impair the system's or the library's original functionality, making it very stealthy and hard for application testers and users to detect, since the library genuinely delivers its advertised functionality alongside the hidden payload. \emph{The beauty of this attack is that once the application is deployed with the Trojan embedded, this attack can be launched at any time later by the adversary (or any individual aware of the attacker-specified trigger object) without accessing the headset, hardware, software, or network stack, only by placing the predefined object in the XR’s camera frame}.
+
+% \textbf{Attacker Goals:} The attacker's primary objective is to subtly degrade user task performance within LVLM-guided intelligent XR cognitive assistant systems by interfering with the perception-to-guidance pipeline through targeted visual manipulations in egocentric frames. These manipulations cause the LVLM to generate erroneous yet contextually plausible instructions, making tasks harder to complete while the system appears to function normally. The impact varies significantly with task context: in everyday tasks (e.g., cooking, Rubik's Cube solving~\cite{ren2025rubikon, srinidhi2024xair, ghasemi2023embedding, zhao2025guided, dugar2024augmented, vir2024archef, lau2025adaptive, qu2024looking}), the attack causes incorrect actions, wasted effort, and user frustration. In professional settings (e.g., furniture assembly, equipment maintenance), it leads to costly errors and safety risks. In mission-critical operations such as hazard localization in firefighting, route planning in search-and-rescue, and tactical procedure execution on battlefields~\cite{shi2021spatial}, the consequences become far more severe, as impairing the decision-making of intelligent XR assistants can critically compromise the cognitive capabilities of first responders (e.g., firefighters, paramedics, etc.) and soldiers, directly putting human lives at stake. Across all contexts, this misdirection increases confusion, prolongs task completion, and elevates cognitive effort, all while remaining undetected.
+
+% We assume the adversary is capable of publishing a malicious library (with an embedded Trojan) on widely used distribution platforms (e.g., GitHub, Unity Asset Store, etc.). The library provides genuine, useful functionality for XR development (e.g., camera frame preprocessing, LVLM API call batching, or frame buffering optimization), making it attractive for developers building LVLM-guided intelligent XR cognitive assistants. This attack model is grounded in well-documented precedents where trusted software dependencies were weaponized to inject malicious code into downstream applications~\cite{ladisa2023sok, ohm2020backstabber}. The adversary only needs general knowledge of how LVLM-guided XR systems process visual inputs, specifically how egocentric frames are captured, preprocessed, and forwarded to the LVLM for reasoning~\cite{srinidhi2024xair, zhao2025guided, qorbani2025teaching,achiam2023gpt}. As discussed in the Attack Concept (Section~\ref{sec:attackconcept}), the malicious library’s legitimate frame-processing role grants the Trojan natural access to the LVLM-guided intelligent XR cognitive assistant's camera-to-LVLM visual processing pipeline, and its genuine utility ensures that the developer who integrates it has no reason to suspect malicious behavior. The adversary further benefits from the reality that modern XR applications depend on numerous third-party dependencies (e.g., OpenCV for Unity~\cite{opencvforunity}, platform SDKs) whose source code is rarely fully audited~\cite{ladisa2023sok}, making the compromised library indistinguishable from any other trusted dependency. The Trojan consists of two components: a payload (a few lines of code that alters the contents of the frame before sending it to the LVLM) and a visual trigger (an adversary-defined, uniquely identifiable object or pattern, e.g., a white cup, a QR code, or any distinct object, used to activate the Trojan). The adversary can design minimal yet effective manipulations, such as subtle color shifts that alter Rubik’s Cube facelet classification or small visual changes that cause incorrect ingredient recognition, which mislead the LVLM into misinterpreting the scene while remaining imperceptible to the user. This Trojan is designed to remain inactive under normal/benign conditions (when not triggered) and thus does not impair the system’s or the library’s original functionality. Hence, such a Trojan is very stealthy and hard for application/system testers, as well as users, to detect, since the library genuinely delivers its advertised functionality alongside the hidden payload.  When the LVLM-guided intelligent XR cognitive assistant system (e.g., Rubik’s Cube solving or cooking) is in use by a user, the adversary (or any individual aware of the trigger) has the capability to place the pre-defined Trojan-triggering object within the XR headset’s camera frame. \emph{The beauty of this attack is that once embedded in the application, this attack can be launched at any time later by anyone aware of the trigger without accessing the headset, hardware, software, or network stack, only by placing the predefined object in the XR’s camera frame}.
+
+% We assume the adversary is an external actor who publishes a malicious library on widely used distribution platforms such as GitHub, the Unity Asset Store, or package repositories. The library provides genuine, useful functionality for XR development (e.g., camera frame preprocessing, LVLM API call batching, or frame buffering optimization), making it attractive for developers building LVLM-guided intelligent XR cognitive assistants. This attack model mirrors real-world precedents where trusted software dependencies were weaponized to inject malicious code into downstream applications. The adversary does not require insider access to any specific application’s development team, access to the target LVLM’s internal parameters, or physical access to users’ XR devices. The adversary only needs general knowledge of how LVLM-guided XR systems process visual inputs, which is publicly available through published research~\cite{srinidhi2024xair, zhao2025guided, qorbani2025teaching}, and LVLM API documentation~\cite{achiam2023gpt, gpt4}. Critically, because the library’s advertised purpose is to preprocess camera frames before they are forwarded to the LVLM, the Trojan’s access to the visual pipeline is inherent to the library’s legitimate functionality and raises no suspicion during integration testing. The developer who integrates the library is an innocent, unknowing victim, not a collaborator. Just as XR developers routinely integrate third-party dependencies such as OpenCV for Unity~\cite{opencvforunity} and platform-specific SDKs~\cite{magicleap} without auditing every line of source code, they may similarly adopt the attacker’s library based on its apparent utility and community adoption. The Trojan consists of a payload (code that intercepts and alters the contents of the camera frame before forwarding it to the LVLM) and a visual trigger (an adversary-defined, uniquely identifiable object or pattern, e.g., a white cup, a white T-shirt, a QR code, or any other distinct object, used to activate the Trojan). The adversary can design minimal yet effective manipulations, such as subtle color shifts that alter Rubik’s Cube facelet classification or small visual changes that cause incorrect ingredient recognition in cooking tasks, which mislead the LVLM into misinterpreting the scene. These changes remain imperceptible to the XR user but cause the LVLM to generate incorrect instructions. This Trojan is designed to remain inactive under normal/benign conditions (when not triggered) and thus does not impair the system’s or the library’s original functionality. Hence, such a Trojan is very stealthy and hard for application/system testers, as well as users, to detect, since the library genuinely delivers its advertised functionality alongside the hidden payload.  When the LVLM-guided intelligent XR cognitive assistant system (e.g., Rubik’s Cube solving or cooking) is in use by a user, the adversary or any individual aware of the trigger has the capability to place the pre-defined Trojan-triggering object within the XR headset’s camera frame. \emph{The key advantage of this attack is that once embedded in the application, this attack can be launched at any time later by anyone aware of the trigger without accessing the headset, hardware, software, or network stack, only by placing the predefined object in the XR’s camera frame}.
+
+
+% \subsection{Cognitive Attack Modeling}
+% \label{sec: model_cognitive}
+% We model a  CAT that leverages runtime manipulation of egocentric frames to generate incorrect instructions in LVLM-guided intelligent XR cognitive assistant systems. The XR system captures egocentric frames from the environment via a head-mounted camera and forwards them to the LVLM, which interprets the visual context and generates step-by-step multimodal guidance for task completion. These systems support a wide range of cognitively guided tasks, such as spatial reasoning tasks (e.g., Rubik's Cube solving, Suduku solving, etc.,) and procedural tasks (e.g., cooking, making coffee, assembling furniture, etc.,)~\cite{wang2025cuberobot, ren2025rubikon, srinidhi2024xair, ghasemi2023embedding, zhao2025guided, qorbani2025teaching, dugar2024augmented, vir2024archef, lau2025adaptive, qu2024looking}. When activated by a detected visual trigger, the Trojan manipulates the last frame from the captured set and forwards the entire set to the LVLM. This manipulation occurs at each decision step, where the LVLM is invoked to generate the next instruction, and continues until deactivation (by removing the trigger from the camera's view). Meanwhile, the system continuously detects visual entities from each frame, storing them in a set \( R = \{r_1, r_2, \ldots, r_n\} \), and evaluates each \( r_i \in R \) against a Boolean Trojan trigger function \( \phi(r_i) \in \{0,1\} \). Once any \( r_i \in R \) satisfies \( \phi(r_i) = 1 \), the Trojan activates and manipulates the final frame in the current sequence before it is sent to the LVLM. To model frame manipulation, we represent the semantically relevant portion of the scene as a matrix \( F_k \in C^{n \times m} \), where \( F_k(i, j) \) denotes the semantic label or class assigned to a localized region at row \( i \) and column \( j \). \( C \) is the set of all valid label values (e.g., object classes, colors, ingredient types, etc.,) \( n \) and \( m \) refer to the number of rows and columns (spatial coordinates), and \( k \) denotes the frame index in the sequence. As discussed in the threat model, the attacker has flexibility in which element to perturb. For instance, in spatial reasoning tasks (e.g., Rubik's Cube solving, Suduku solving), each element in \( F_k \) represents a semantic attribute of a scene object (e.g., color, shape, position). In procedural tasks (e.g., cooking), elements in \( F_k \) may denote object properties such as category, state, or quantity (e.g., ingredients, utensils, etc.,). A single position \( (i^*, j^*) \in \{0, \dots, n-1\} \times \{0, \dots, m-1\} \) is selected, where \( i^* \) and \( j^* \) are spatial coordinates identifying the targeted element in the scene. The attack matrix \( F_k^{att} \) is defined as:
+
+% \vspace{-3mm}
+% \[
+% F_k^{att}(i, j) =
+% \begin{cases}
+% \delta(F_k(i^*, j^*)) & \text{if } (i, j) = (i^*, j^*) \\
+% F_k(i, j) & \text{otherwise}
+% \end{cases}
+% \]
+% Where \( \delta \) is an attack function that replaces the original label at 
+% \( F_k(i^*, j^*) \) with a different valid label from \( C \setminus \{F_k(i^*, j^*)\} \). This ensures minimal perturbation by altering only one element, while maximizing LVLM misinterpretation. The manipulated frame, containing \( F_k^{att} \), is forwarded to the LVLM for instruction generation based on the tampered input. Although only a single element is altered, this subtle modification distorts the model's scene interpretation, resulting in incorrect guidance that degrades task performance, increases cognitive load, and prolongs task-completion time in LVLM-guided intelligent XR cognitive assistant systems (e.g., Rubik’s Cube, cooking, coffee making, etc.).
+
+
+
+\subsection{Cognitive Attack Trojan Modeling and Execution}
+\label{sec: model_cognitive}
+We model a  CAT that leverages runtime manipulation of egocentric frames to generate incorrect instructions in LVLM-guided intelligent XR cognitive assistant systems. The XR system captures egocentric frames from the environment via a head-mounted camera and forwards them to the LVLM, which interprets the visual context and generates step-by-step multimodal guidance for task completion. These systems support a wide range of cognitively guided tasks, such as spatial reasoning tasks (e.g., Rubik's Cube solving, Suduku solving, etc.,) and procedural tasks (e.g., cooking, making coffee, assembling furniture, etc.,)~\cite{wang2025cuberobot, ren2025rubikon, srinidhi2024xair, ghasemi2023embedding, zhao2025guided, qorbani2025teaching, dugar2024augmented, vir2024archef, lau2025adaptive, qu2024looking}. To model frame manipulation, we represent the semantically relevant portion of the scene as a matrix \( F_k \in C^{n \times m} \), where \( F_k(i, j) \) denotes the semantic label or class assigned to a localized region at row \( i \) and column \( j \). \( C \) is the set of all valid label values (e.g., object classes, colors, ingredient types, etc.) \( n \) and \( m \) refer to the number of rows and columns (spatial coordinates), and \( k \) denotes the frame index in the sequence. As discussed in the threat model, the attacker has flexibility in which element to perturb. For instance, in spatial reasoning tasks (e.g., Rubik's Cube solving, Sudoku solving), each element in \( F_k \) represents a semantic attribute of a scene object (e.g., color, shape, position). In procedural tasks (e.g., cooking), elements in \( F_k \) may denote object properties such as categories, states, or quantities (e.g., ingredients, utensils, etc.). \textcolor{blue}{A single position \( (i^*, j^*) \in \{0, \dots, n-1\} \times \{0, \dots, m-1\} \) is dynamically selected from the segmentation mask of the payload-specified target object, where \( i^* \) and \( j^* \) are spatial coordinates identifying the targeted semantic element in the scene.} The attack matrix \( F_k^{att} \) is defined as:
+
+\[
+F_k^{att}(i, j) =
+\begin{cases}
+\delta(F_k(i^*, j^*)) & \text{if } (i, j) = (i^*, j^*) \\
+F_k(i, j) & \text{otherwise}
+\end{cases}
+\]
+Where \( \delta \) replaces the original label at \( F_k(i^*, j^*) \) with a different valid label from \( C \setminus \{F_k(i^*, j^*)\} \), ensuring minimal perturbation while maximizing LVLM misinterpretation. 
+
+At runtime, the system continuously detects visual entities from each frame, storing them in a set \( R = \{r_1, r_2, \ldots, r_n\} \), and evaluates each \( r_i \in R \) against a Boolean Trojan trigger function \( \phi(r_i) \in \{0,1\} \). If no entity satisfies \( \phi(r_i) = 1 \), clean frames are forwarded to the LVLM unchanged. \textcolor{blue}{Once any \( r_i \in R \) satisfies \( \phi(r_i) = 1 \), the Trojan activates at each subsequent decision step: it selects the most recent frame, extracts \( F_k \), dynamically localizes the payload-specified target object, applies \( \delta \) at the corresponding coordinate \( (i^*, j^*) \), and re-embeds the modified matrix before forwarding the manipulated frame sequence \( F' \) to the LVLM \( \mathcal{M} \).} This perturbation persists across all subsequent decision steps as long as the trigger condition remains satisfied. Although only a single element is altered, this subtle modification distorts the model's scene interpretation, resulting in incorrect guidance that degrades task performance, increases cognitive load, and prolongs task-completion time in LVLM-guided intelligent XR cognitive assistant systems.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1\columnwidth]{figs/CogXR_Base_1.pdf}
+       \caption{An overview of the \textit{baseline CogXR} system. \textbf{(a–b)} An XR user performs a spatial reasoning task (Rubik's Cube solving) while the device captures egocentric frames in real-time. \textbf{(c--e)} The system constructs a prompt from the captured frames and task description, and sends it to the LVLM for context-aware guidance generation. \textbf{(f--h)} The rendering engine delivers the generated instructions to the user via visual overlays and textual cues.}
+       % \caption{An overview of developed LVLM-guided intelligent XR cognitive assistant systems, denoted as \textit{baseline CogXR}. \textbf{(a–b)} An XR user performs a spatial reasoning task (Rubik's Cube solving) using CogXR while the device captures egocentric frames in real-time. \textbf{(c–d)} Using these frames and the task description, the system constructs and sends a prompt to the LVLM. \textbf{(e–f)} The LVLM generates context-aware task guidance. \textbf{(g–h)} The rendering engine delivers those instructions to the user.}
+     \label{fig:cogXR_base}
+ \end{figure} 
+
+
+% \textit{For the complete step-by-step execution algorithm, please refer to the supplementary material.}}
+
+
+% \subsection{Cognitive Attack Trojan Execution}
+% The proposed  CAT operates in real time within LVLM-guided intelligent XR cognitive assistant systems. At each decision step, the system monitors for a predefined visual trigger. Once detected, it perturbs a single semantic component within the most recent egocentric frame before forwarding the frame sequence to the LVLM for reasoning and instruction generation. The perturbation persists as long as the trigger condition remains satisfied and applies broadly across diverse XR cognitive tasks—from spatial-reasoning tasks (e.g., Rubik's Cube solving, Sudoku) to procedural tasks (e.g., cooking, coffee preparation, furniture assembly). Specifically, the system captures egocentric frames \( F \) and detects visual entities \( R \). If any entity satisfies \( \phi(r_i) = 1 \), the Trojan activates: it selects the most recent frame, extracts the semantic matrix \( F_k \), applies the attack function \( \delta \) at a targeted coordinate \( (i^*, j^*) \), and re-embeds the modified matrix before forwarding \( F' \) to the LVLM \( \mathcal{M} \). If no trigger is detected, clean frames are forwarded unchanged. Even a single misclassified element causes the LVLM to misinterpret the scene, producing incorrect instructions that drift from the actual task state while maintaining the illusion of correctness. \textit{For the complete step-by-step execution algorithm, please refer to the supplementary material.}
+
+\begin{promptbox}[prm:InstructionCogXR]
+{Example prompt for CogXR system}
+\footnotesize
+You are an intelligent cognitive assistant designed to support physical task execution in XR environments. From the given \textit{$<$egocentric frames$>$} captured by the headset's front-facing camera, identify the \textit{$<$key objects$>$} in view. Combine this information with the \textit{$<$known information$>$} from the XR environment, the \textit{$<$previous instruction$>$} issued to the user, the specified \textit{$<$task$>$}, and its \textit{$<$task-specific constraints$>$}. Analyze the user's current progress and determine the next optimal action. Provide precise, context-aware natural-language instructions grounded in the user's visual perspective to support accurate and effective task completion.
+\end{promptbox}
+
+\subsection{Novelty of the Proposed Attack}
+Our proposed CAT operates fundamentally differently from SOTA multi-modal prompt injection attacks, adversarial attacks, classical backdoor attacks on LVLMs, and XR-specific attacks (without LVLMs-guided intelligent cognitive assistants)~\cite{liu2024survey, clusmann2025prompt, owasp2025prompt}. For instance, multimodal prompt injection attacks manipulate LVLMs by embedding malicious instructions in text prompts (e.g., concealed text within images) or harmful visual patterns (e.g., disruptive overlays)~\cite{liu2024survey, clusmann2025prompt}. In contrast, adversarial attacks typically rely on detailed knowledge of the target model, such as its parameters or architecture, to generate pixel-level perturbations~\cite{liu2024survey,zhang2025fighting,zhang2024visual,bhagwatkar2024improving}. In practice, both attack classes face barriers in commercial LVLM settings, where models are generally accessible only through restricted cloud APIs rather than as fully exposed systems~\cite{owasp2025prompt,bhagwatkar2024improving}. Similarly, classical backdoor attacks poison the training data by embedding static patterns into model weights~\cite{liang2025revisiting,lyu2024trojvlm}, requiring access during training and task-specific tuning~\cite{liang2025revisiting}. In contrast, our CAT requires neither API access, knowledge of model internals (e.g., parameters or architectures), training data poisoning, nor modification of model weights. Instead, the Trojan activates at runtime by altering object-level properties via the attacker-specified visual trigger, remaining effective regardless of the underlying LVLM architecture. Beyond those attacks, XR-specific attacks such as perception manipulation attacks (PMA) cause broad scene-level disruption through multi-sensory manipulation~\cite{cheng2023exploring,tseng2022dark} but do not target LVLM object reasoning. Likewise, Dirksen et al.~\cite{dirksen2025modeling} address cognitive security in AR through attention-based adversarial manipulation, yet their framework operates at the scene-level attention layer rather than at the LVLM semantic reasoning level. Meanwhile, obstruction attacks overlay virtual content to occlude visibility of the real world~\cite{xiu2025vision}, creating readily detectable visual artifacts. On the other hand, AR-VIM~\cite{xiu2025detecting} alters text and visual patterns in AR overlays but only changes what users see, not the internal object representations LVLMs process. Similarly, Zhang et al.~\cite{zhang2025evil} employ query timing, environment manipulation, visual overlay injection, and prompt modification at observable input/output boundaries, making them detectable via multimodal verification~\cite{huang2024effective} and LVLM safety filters~\cite{liu2024formalizing}. In contrast, our proposed CAT modifies minimal visual elements (e.g., object color, size, or labels) before sending frames to the LVLM, targeting semantic-level object representations rather than observable channels typically examined by existing defenses. \emph{Another distinguishing factor is that the Trojan remains dormant until triggered by any individual aware of the attacker-specified trigger object (who does not need to be the same person who implanted the Trojan), making it extremely difficult for software testers to detect. Once implanted in the application, the attack can be enabled or disabled without accessing the system.}
+
+% \begin{figure}[t]
+% \centering
+% \footnotesize
+% \begin{tcolorbox}[enhanced, colback=gray!5!white, colframe=gray! 75!black,left=.5pt,right=.5pt,top=.5pt,bottom=.5pt]
+% You are an intelligent cognitive assistant designed to support physical task execution in XR environments. From the given \textit{$<$egocentric frames$>$} captured by the headset's front-facing camera, identify the \textit{$<$key objects$>$} in view, then combine this with the \textit{$<$known information$>$} from the XR environment, the \textit{$<$previous instruction$>$} issued to the user, the specified \textit{$<$task$>$}, and its \textit{$<$task-specific constraints$>$}. Analyze the user's current progress and determine the next optimal action. Provide precise, context-aware natural language instructions grounded in the user's visual perspective to ensure accurate and effective task completion.
+% \end{tcolorbox}
+% \caption{Example prompt for CogXR system.}
+% \label{fig:InstructionCogXR}
+% \end{figure}
+
+
+
+
+% Our proposed  CAT operates fundamentally differently from SOTA multi-modal prompt injection attacks on LVLMs, adversarial attacks on LVLMs models, classical backdoor attacks on LVLMs models, and XR-specific attacks (without LVLMs-guided intelligent cognitive assistants)~\cite{liu2024survey, clusmann2025prompt, owasp2025prompt}. For instance, multi-modal prompt injection attacks manipulate LVLMs by exploiting both text and visual inputs. These attacks inject malicious instructions through deliberately designed text prompts (e.g., concealed text within images) and harmful visual patterns (e.g., disruptive overlays), which cause the LVLM to generate incorrect outputs~\cite{liu2024survey, clusmann2025prompt}.  However, they face practical barriers as most commercial LVLMs operate through restricted enterprise APIs that limit user control over inputs~\cite{owasp2025prompt}, rendering them impractical in production environments with layered defenses. Furthermore, adversarial attacks targeting LVLMs by perturbing visual inputs require attackers to have access to the target LVLM's internal details (e.g., parameters, model architecture, etc.,) to craft effective pixel-level perturbations~\cite{liu2024survey,zhang2025fighting,zhang2024visual,bhagwatkar2024improving}, which is infeasible since commercial LVLMs (e.g., GPT-4o~\cite{achiam2023gpt}, Google Gemini 2.0~\cite{team2023gemini}) are accessible only via cloud-based APIs~\cite{bhagwatkar2024improving}. Similarly, classical backdoor attacks poison training data during LVLM model development, embedding static attack patterns into LVLM model weights~\cite{liang2025revisiting,lyu2024trojvlm}. These approaches require access during training and demand task-specific model tuning~\cite{liang2025revisiting}. In contrast, our proposed CAT requires neither API access nor knowledge of model internals (e.g., parameters or architectures), and it does not depend on training-data poisoning or model-weight modification. Instead, the Trojan activates at runtime by altering object-level properties via a physical visual trigger, remaining effective across LVLM-guided intelligent XR cognitive assistants regardless of the underlying model architecture. Beyond those attacks, XR-specific attacks such as perception manipulation attacks (PMA) cause broad scene-level disruption through multi-sensory manipulation~\cite{cheng2023exploring,tseng2022dark} but fail to directly target LVLM object reasoning. Dirksen et al.~\cite{dirksen2025modeling} similarly address cognitive security in AR through attention-based adversarial manipulation, yet their framework operates at the scene-level attention layer and does not target LVLM semantic reasoning. Meanwhile, obstruction attacks overlay virtual content to occlude real-world visibility~\cite{xiu2025vision}, creating obvious visual artifacts that are readily detectable. Furthermore, AR-VIM~\cite{xiu2025detecting} attacks alter text and visual patterns in AR overlays, yet only change what users see, not the internal object representations LVLMs process for reasoning. Likewise, Zhang et al.~\cite{zhang2025evil} employ diverse attack mechanisms, including query timing, environment manipulation, visual overlay injection, and prompt modification, which operate at observable input/output boundaries. However, such attacks can be easily detected via multimodal verification techniques~\cite{huang2024effective} and LVLM safety filters~\cite{liu2024formalizing}. In contrast, our proposed  CAT targets object-level visual alterations designed specifically to exploit LVLM processing. By modifying minimal visual elements (e.g., object color, size, or labels) before sending frames to the LVLM, these changes can lead to significant misinterpretations by the LVLM while remaining unnoticed by users and are difficult to detect, since they target the semantic-level representation of objects rather than observable input/output channels that existing defenses monitor. \emph{Another distinguishing factor of our proposed attack is that it remains dormant until triggered by an attacker (who does not need to be the same person who implanted the Trojan), and hence it is extremely difficult for software testers to detect the Trojan. Once implanted in the application, an attacker can enable (trigger) or disable the Trojan without accessing the system}.
+
+\section{Baseline: CogXR System Design} \label{sec:cogxrsystemdesign} 
+\textit{CogXR} is an intelligent system that assists users in performing complex, multi-step physical tasks by integrating the spatial perception of XR headsets with the semantic and visual reasoning of LVLMs, as shown in Figure~\ref{fig:cogXR_base}. The system continuously captures frames using front-facing RGB cameras on head-mounted XR devices (e.g., the Magic Leap 2~\cite{zhang2025evil}) and selectively transmits buffered frames to an LVLM backend via remote API calls or local/edge computing resources. For this, we use GPT-4o~\cite{achiam2023gpt}, which interprets captured frames, infers user progress, and generates context-aware, step-by-step instructions, leveraging its training on massive multimodal data \textcolor{blue}{to produce personalized guidance across both spatial-reasoning and procedural task categories~\cite{srinidhi2024xair,vir2024archef,ren2025rubikon}}. Building on these capabilities and inspired by SOTA LVLM-guided intelligent XR cognitive assistants~\cite{srinidhi2024xair, zhao2025guided, qorbani2025teaching}, we design CogXR as an intelligent, context-aware XR cognitive assistant using the structured Prompt~\ref{prm:InstructionCogXR}, where \textit{task} denotes the XR activity (e.g., Rubik’s Cube solving, cooking), \textit{key objects} refer to task-relevant items in the egocentric view (e.g., colors, utensils), and \textit{task-specific constraints} capture task-dependent requirements (e.g., target cube configuration, recipe specifications). Using these structured inputs alongside egocentric frames, the LVLM analyzes user progress and generates precise next-action instructions delivered as text prompts, spatially anchored visual overlays, and voice instructions rendered in the XR interface.
+
+% \section{Baseline: CogXR System Design} \label{sec:cogxrsystemdesign} 
+% \textit{CogXR} is an intelligent system that assists users in performing complex, multi-step physical tasks by integrating the spatial perception of XR headsets with the semantic and visual reasoning of LVLMs, as shown in Figure~\ref{fig:cogXR_base}. The system continuously captures frames using front-facing RGB cameras on head-mounted XR devices (e.g., the Magic Leap 2~\cite{zhang2025evil}) and selectively transmits buffered frames to an LVLM backend via remote API calls or local/edge computing resources. For this, we use GPT-4o~\cite{achiam2023gpt}, which interprets captured frames, infers user progress, and generates context-aware, step-by-step instructions, leveraging its training on massive multimodal data to produce personalized guidance for activities such as coffee making~\cite{srinidhi2024xair}, pizza making~\cite{vir2024archef}, and Rubik's Cube solving~\cite{ren2025rubikon}. Building on these capabilities and inspired by SOTA LVLM-guided intelligent XR cognitive assistants~\cite{srinidhi2024xair, zhao2025guided, qorbani2025teaching}, we design CogXR as an intelligent, context-aware XR cognitive assistant using the structured prompt shown in Figure~\ref{fig:InstructionCogXR}, where \textit{task} denotes the XR activity (e.g., Rubik’s Cube solving, cooking), \textit{key objects} refer to task-relevant items in the egocentric view (e.g., colors, utensils), and \textit{task-specific constraints} capture task-dependent requirements (e.g., target cube configuration, recipe specifications). Using these structured inputs alongside egocentric frames, the LVLM analyzes user progress and generates precise next-action instructions delivered as text prompts, spatially anchored visual overlays, and voice instructions rendered in the XR interface. 
+
+Although CogXR is applicable across a wide range of tasks, as discussed in Section~\ref{sec:threatnodel}, we evaluate the proposed CAT on two representative categories that capture fundamentally different cognitive demands. \textcolor{blue}{For \emph{spatial reasoning}, we use Sudoku and Rubik's Cube solving, as both require mental rotation, geometric reasoning, and pattern recognition~\cite{ren2025rubikon,hajahmadi2024investigating, dugar2024augmented, qu2024looking}, making them well-suited for measuring performance degradation at the semantic level perturbations. For \emph{procedural} tasks, we use steak cooking and coffee making, as both involve discrete, ordered steps and continuous adaptation to the environment state~\cite{srinidhi2024xair,qorbani2025teaching, majil2022augmented, ghasemi2023embedding, bonnetto2025epfl}, representing practical, safety-relevant scenarios. Together, these four tasks provide complementary coverage of the cognitive demands typical of real-world XR cognitive assistants. Across all tasks, CogXR captures egocentric frames to extract the current task state into a semantic matrix representation \(F_k\), instructs the LVLM to determine the next optimal action, and re-estimates \(F_k\) after each user action to verify execution and maintain task-state awareness, enabling progressive guidance toward completion. When the CAT is active, a single semantic perturbation to \(F_k\) (e.g., modifying a Sudoku digit, changing a Rubik's facelet color, altering a steak's color from dark to light to appear undercooked, or changing the coffee machine water level from sufficient to insufficient) corrupts the state perception, causing the LVLM to misinterpret the task configuration and generate incorrect or potentially unsafe action recommendations, as shown in Figure~\ref{fig:CAT}. \textit{For task-specific visual references, please refer to the supplementary material.}}
+
+
+% Although CogXR is applicable across a wide range of tasks, as discussed in section~\ref{sec:threatnodel}, we evaluate the proposed CAT on two representative categories that capture fundamentally different cognitive demands. We use Rubik's Cube solving as our spatial reasoning task because it requires mental rotation, geometric reasoning, and pattern recognition~\cite{ren2025rubikon, hajahmadi2024investigating}, making it well-suited for measuring performance degradation under semantic-level perturbations. We use cooking as our procedural task because it involves discrete, ordered steps and continuous adaptation to the environment state~\cite{qorbani2025teaching, majil2022augmented, ghasemi2023embedding, bonnetto2025epfl}, representing a practical, safety-relevant scenario. Together, these two tasks provide complementary coverage of the cognitive demands typical of real-world XR cognitive assistants.
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=\columnwidth]{figs/R_attack2_c.pdf}
+%     \caption{Malicious CogXR during Rubik's Cube solving. \textbf{(1)} The XR headset streams egocentric frames. \textbf{(2--3)} A predefined visual trigger (e.g., a cup with a QR) activates the Trojan, which subtly recolors a cube facelet. \textbf{(4)} Manipulated frames are sent to the LVLM. \textbf{(5--6)} The misled LVLM outputs incorrect steps, deceiving the user.}
+%     \label{fig:rubikscubeattack}
+% \end{figure}
+
+ 
+% Below, we present our CogXR implementations for both tasks.}
+
+% \textit{For a detailed description of the CogXR system design, please refer to the supplementary material.}
+
+ 
+% \textit{CogXR} is an intelligent system designed to assist users in performing complex, multi-step physical tasks by integrating the spatial perception capabilities of XR headsets with the semantic and visual reasoning of LVLMs, as shown in Figure ~\ref{fig:cogXR_base}. The system continuously captures frames of the user's environment via front-facing RGB cameras when operating on head-mounted XR devices (i.e., the Magic Leap 2~\cite{magicleap}). These frames, selectively buffered to provide a representative task context, are transmitted to an LVLM backend for analysis through remote application programming interface (API) calls or local or edge computing resources, depending on the deployment requirements. For this, we use a pre-trained multi-modal GPT4o~\cite{achiam2023gpt} LVLM model. The LVLM interprets this visual input (e.g., captured frame) with a high-level understanding of the scene, infers the user's current progress within the task, and generates context-aware, step-by-step instructions tailored to the activity. LVLMs are large, pre-trained foundation models trained on massive amounts of text, images, videos, etc. They can effectively understand the immediate context and generate human-centric, context-aware, and personalized instructions to complete a task (e.g., coffee making in XR~\cite{srinidhi2024xair}, Neapolitan pizza-making in XR~\cite{vir2024archef}, Rubik’s Cube solving~\cite{ren2025rubikon}, etc., ). Building on these capabilities and inspired by SOTA LVLM-guided intelligent XR cognitive assistants~\cite {srinidhi2024xair, zhao2025guided, qorbani2025teaching}, we design CogXR as an intelligent, context-aware XR cognitive assistant. Using the structured prompt illustrated in Figure~\ref{fig:InstructionCogXR}, CogXR generates task-specific instructions where the \textit{task} represents a given XR task (e.g., solving a Rubik’s Cube, cooking, assembling furniture, etc.), the \textit{key objects} are task-relevant items in the egocentric view (e.g., colors, ingredients, utensils, containers, tools, etc.), and \textit{task-specific constraints} denote task-dependent requirements (e.g., target cube configuration, recipe specifications, assembly sequence). The LVLM uses these structured inputs, along with egocentric frames, to analyze user progress and generate precise next-action instructions. The generated action/guidance is delivered through multi-modal outputs, including textual prompts, spatially anchored visual overlays, and voice instructions, all rendered through the XR interface to support intuitive user interaction. The CogXR system is applicable across a wide range of physical tasks, such as solving a Rubik's Cube, completing Sudoku puzzles, preparing coffee, assisting with cooking, and assembling furniture, each involving hands-on manipulation and spatial reasoning~\cite{srinidhi2024xair, qu2024looking, botto2020augmented, yoo2023modeling}. As the user proceeds, the XR headset continuously captures new frames, which are sent back to the LVLM to update the CogXR's understanding of the task state and to generate the next instruction to complete the tasks. This iterative perception–feedback loop enables CogXR to provide near-real-time, adaptive support grounded in the user’s physical context, delivering a seamless and intelligent XR experience. To evaluate the proposed  CAT, we target two representative task categories that capture fundamental cognitive demands in real-world XR systems: (1) spatial reasoning tasks, which require geometric understanding and mental rotation, and (2) procedural tasks, which require sequential step execution~\cite{rochlen2023sequential,li2025enhancing}. We use Rubik's Cube solving as our spatial reasoning task because it is a well-established task for spatial intelligence and XR-guided instruction that requires mental rotation, geometric reasoning, and pattern recognition~\cite{ren2025rubikon,valerie2020supporting, hajahmadi2024investigating}. Its inherent cognitive load enables precise measurement of performance degradation under semantic-level perturbations. For our procedural task, we use cooking, which is widely adopted in XR applications for evaluating procedural guidance and involves discrete ordered steps and continuous adaptation to environment state~\cite{qorbani2025teaching, majil2022augmented, ghasemi2023embedding, bonnetto2025epfl}. Together, these tasks demonstrate the attack’s generalizability across diverse cognitive demands typical of a real-world XR cognitive assistant. Below, we present our CogXR implementations for Rubik’s Cube solving and cooking.
+
+
+% \textbf{CogXR for Rubik’s Cube Solving Tasks:} CogXR guides users through Rubik's Cube solving by capturing egocentric frames to extract the cube state into a semantic matrix representation \(F_k\), where each element denotes a facelet color, then instructs the LVLM to determine the next optimal move. The interface integrates several assistive features, including a timer, CubeState (organization of the cubes) visualization, 3D move preview, voice/text cues, etc. After each user move, the system captures new frames to verify execution and maintain task state awareness, enabling progressive guidance toward solving. When the  CAT is active, a single semantic matrix perturbation to \(F_k\) (e.g., a facelet color change from blue to red) corrupts the state perception, causing the LVLM to misinterpret the cube configuration and generate incorrect move recommendations, as shown in Figure~\ref{fig:rubikscubeattack}.
+
+% \textit{For visual reference, please refer to Figure~1 in the supplementary material}.}
+
+% \textbf{CogXR for Cooking Tasks:} CogXR also guides users through cooking tasks by continuously capturing egocentric frames and extracting the current state into semantic matrix \(F_k\) (encoding ingredient types, utensil states, and preparation progress) and generates step-by-step instructions through the LVLM. The interface overlays step cues on relevant objects, highlights hazards around heat or sharp tools, and provides a timer with voice and text guidance. The LVLM generates instructions that include timing and safety considerations, specifying which ingredients and utensils to use and when to transition to the next stage. After each user action, CogXR acquires new frames, re-estimates \(F_k\), and verifies task completion, keeping guidance aligned with the user's actual progress. When the  CAT is active, a single perturbation to \(F_k\) (e.g., altering steak color from dark to light to appear undercooked) corrupts the task understanding, disrupting the LVLM's reasoning about recipe sequence and ingredient compatibility, leading to incorrect or potentially unsafe instructions, as shown in Figure~\ref{fig:cookingattack}. \textit{For more visual references of both tasks, please refer to the supplementary material.} 
+
+% \textit{For visual reference, please refer to Figure~3 and 4 in the supplementary material}.
+% \textit{For detailed descriptions and visual references of both CogXR implementations, please refer to the supplementary material.}
+
+\textbf{\emph{It is important to note that, in the remainder of this paper, we refer to the \textit{CogXR} system operating in a benign environment as the \textit{baseline CogXR}, and the CogXR system implanted with a CAT as the malicious version of CogXR, denoted \textit{malicious CogXR}.}}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1\columnwidth]{figs/CogXRAttack_H.pdf}
+       \caption{Overview of the CAT pipeline. XR headset frames are analyzed to detect a predefined trigger object. Upon detection, CAT alters the visual content, which makes the LVLM generate misleading instructions, which are then delivered through the XR interface.}
+     \label{fig:CAT}
+ \end{figure} 
+
+\section{System Implementation and Evaluation}
+\label{sec:systemimplementationandevaluation}
+\textcolor{blue}{We implemented both baseline CogXR and malicious CogXR in Unity 2022.3.20f1, targeting the Magic Leap 2 headset running OS version 1.12.0, using the Magic Leap Unity SDK 2.6.0. The system supports multiple XR-guided task scenarios, including spatial-reasoning tasks (Rubik's Cube and Sudoku solving) and procedural tasks (steak cooking and coffee making). Both versions use the pretrained GPT-4o model~\cite{achiam2023gpt}, accessed via the OpenAI API~\cite{gpt4}, as the LVLM backend to interpret egocentric visual input, estimate user progress, and generate context-aware, step-by-step multimodal guidance. For auditory feedback, we integrated Magic Leap's text-to-speech utility to provide voice guidance during task execution. The baseline CogXR captures egocentric frames from the headset camera and uses the LVLM to deliver step-by-step guidance through visual overlays, concise text, and voice instructions. In the malicious CogXR, we simulate the attack by embedding CAT within a third-party library integrated into the application's visual-processing pipeline, which silently alters visual input before it is forwarded to the LVLM. As shown in Figure~\ref{fig:cognitive-trojan}, the attack comprises two synchronized phases. First, CAT continuously analyzes incoming egocentric frames to detect a predefined visual trigger (Line~11). Once the trigger is detected, CAT activates the corresponding payload (Line~14). The payload uses a locally deployed YOLO11-based instance-segmentation model~\cite{yolo11_ultralytics} to dynamically localize the payload-specified target object, selects the highest-confidence instance above a predefined threshold, refines its segmentation mask using OpenCV for Unity~\cite{opencvforunity}, and applies the corresponding semantic modification, such as changing an object's color or digit, before forwarding the manipulated frame to the LVLM.}
+
+%We implemented both baseline CogXR and malicious CogXR in Unity 2022.3.20f1, targeting the Magic Leap 2 headset running OS version 1.12.0, using the Magic Leap Unity SDK 2.6.0. The system supports multiple XR-guided task scenarios, including spatial reasoning tasks (Rubik's Cube solving) and procedural tasks (cooking). Both applications utilize a pre-trained GPT-4o~\cite{achiam2023gpt} as the LVLM backend with 8 billion parameters, accessed via the OpenAI API~\cite{gpt4}, responsible for interpreting egocentric visual input, grounding spatial semantics, and generating step-by-step multimodal guidance. For auditory feedback, we integrated Magic Leap's text-to-speech utility to provide audio guidance during task execution. Our baseline CogXR captures egocentric frames from the headset camera and uses an LVLM to deliver step-by-step guidance via visual overlays and concise text. In the malicious CogXR, we simulate the attack by embedding a CAT within a third-party library integrated into the application's visual processing pipeline, which silently alters visual input to manipulate LVLM reasoning. As shown in Figure~\ref{fig:cognitive-trojan}, the attack comprises two synchronized phases: trigger detection continuously monitors incoming egocentric frames to identify predefined visual cues (Line 20), and upon detection, payload execution applies semantic-level modifications to target objects (e.g., color) (Line 24) before forwarding the corrupted frame to the LVLM. We leveraged OpenCV for Unity~\cite{opencvforunity} to enable robust trigger detection and precise semantic manipulation.
+
+
+% \begin{table}[t]
+% \centering
+% \caption{Component-wise latency of baseline and CAT-enabled CogXR across four tasks. All values are reported in seconds. \textit{Base} denotes the baseline condition, \textit{CAT} denotes the CAT-enabled condition, \textit{Det.} denotes detection, \textit{Sem.} denotes semantic, and \textit{N/A} denotes not applicable.}
+% \label{tab:cogxr_component_latency}
+% %\vspace{-2mm}
+% \resizebox{\columnwidth}{!}{%
+% \begin{tabular}{|l|cc|cc|cc|cc|}
+% \hline
+% \multirow{2}{*}{\textbf{System Component}} 
+% & \multicolumn{2}{c|}{\textbf{Task 1}} 
+% & \multicolumn{2}{c|}{\textbf{Task 2}} 
+% & \multicolumn{2}{c|}{\textbf{Task 3}} 
+% & \multicolumn{2}{c|}{\textbf{Task 4}} \\ \cline{2-9}
+
+% & \multicolumn{1}{c|}{\textbf{Base}} 
+% & \textbf{CAT}
+% & \multicolumn{1}{c|}{\textbf{Base}} 
+% & \textbf{CAT}
+% & \multicolumn{1}{c|}{\textbf{Base}} 
+% & \textbf{CAT}
+% & \multicolumn{1}{c|}{\textbf{Base}} 
+% & \textbf{CAT} \\ \hline
+
+% \textbf{End-to-End System}
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \textbf{GPT-4o Backend}
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \textbf{Local XR Processing}
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \quad Frame Capture
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \quad Response Parsing
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \quad XR Rendering
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \textbf{CAT Processing}
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX \\ \hline
+
+% \quad QR-Coded Cup Det.
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX \\ \hline
+
+% \quad Star-Sticker Det.
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX \\ \hline
+
+% \quad Text-Card Det.
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX \\ \hline
+
+% \quad Sem. Perturbation
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX \\ \hline
+
+% \end{tabular}%
+% }
+% \end{table}
+
+
+
+% \begin{table}[t]
+% \centering
+% \caption{Component-wise latency of baseline and CAT-enabled CogXR across four tasks. All values are reported in seconds. \textit{Base} denotes the baseline condition, \textit{Sem.} denotes semantic, and \textit{N/A} denotes not applicable. Trigger-detection latency is reported as \(X/Y/Z\), corresponding to the QR-coded cup, star-shaped sticker, and text card, respectively.}
+% \label{tab:cogxr_component_latency}
+% %\vspace{-2mm}
+% \resizebox{\columnwidth}{!}{%
+% \begin{tabular}{|l|cc|cc|cc|cc|}
+% \hline
+
+% \multirow{3}{*}{\textbf{System Component}}
+% & \multicolumn{4}{c|}{\textbf{Spatial-Reasoning Tasks}}
+% & \multicolumn{4}{c|}{\textbf{Procedural Tasks}} \\ \cline{2-9}
+
+% & \multicolumn{2}{c|}{\textbf{Rubik's Cube}}
+% & \multicolumn{2}{c|}{\textbf{Sudoku solving}}
+% & \multicolumn{2}{c|}{\textbf{Steak Cooking}}
+% & \multicolumn{2}{c|}{\textbf{Coffee Making}} \\ \cline{2-9}
+
+% & \multicolumn{1}{c|}{\textbf{Base}}
+% & \textbf{CAT}
+% & \multicolumn{1}{c|}{\textbf{Base}}
+% & \textbf{CAT}
+% & \multicolumn{1}{c|}{\textbf{Base}}
+% & \textbf{CAT}
+% & \multicolumn{1}{c|}{\textbf{Base}}
+% & \textbf{CAT} \\ \hline
+
+% \textbf{End-to-End System}
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \textbf{GPT-4o Backend}
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \textbf{XR Processing}
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \quad Frame Capture
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \quad Response Parsing
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \quad XR Rendering
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX
+% & \multicolumn{1}{c|}{XX} & XX \\ \hline
+
+% \textbf{CAT Processing}
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX \\ \hline
+
+% \quad Trigger Detection
+% & \multicolumn{1}{c|}{N/A} & X/Y/Z
+% & \multicolumn{1}{c|}{N/A} & X/Y/Z
+% & \multicolumn{1}{c|}{N/A} & X/Y/Z
+% & \multicolumn{1}{c|}{N/A} & X/Y/Z \\ \hline
+
+% \quad Sem. Perturbation
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX
+% & \multicolumn{1}{c|}{N/A} & XX \\ \hline
+
+% \end{tabular}%
+% }
+% \end{table}
+% Trigger-detection latency is reported as \(X/Y/Z\), corresponding to the QR-coded cup, star-shaped sticker, and text card, respectively. The CAT-processing latency includes the mean detection latency across the three independently evaluated trigger variants and the semantic-perturbation latency.
+\begin{table}[t]
+\centering
+\caption{\textcolor{blue}{Component-wise latency of baseline and CAT-enabled CogXR across rubik's cub solving (RC), sudoku solving (SS), stack cooking (SC) and coffee making (CM). All values are reported in seconds. \textit{Base} denotes the baseline condition, \textit{Sem.} denotes semantic, and \textit{N/A} denotes not applicable.}}
+\label{tab:cogxr_component_latency}
+%\vspace{-2mm}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|cc|cc|cc|cc|}
+\hline
+
+\multirow{3}{*}{\textbf{System Component}}
+& \multicolumn{4}{c|}{\textbf{Spatial-Reasoning Tasks}}
+& \multicolumn{4}{c|}{\textbf{Procedural Tasks}} \\ \cline{2-9}
+
+& \multicolumn{2}{c|}{\textbf{RC}}
+& \multicolumn{2}{c|}{\textbf{SS}}
+& \multicolumn{2}{c|}{\textbf{SC}}
+& \multicolumn{2}{c|}{\textbf{CM}} \\ \cline{2-9}
+
+& \multicolumn{1}{c|}{\textbf{Base}}
+& \textbf{CAT}
+& \multicolumn{1}{c|}{\textbf{Base}}
+& \textbf{CAT}
+& \multicolumn{1}{c|}{\textbf{Base}}
+& \textbf{CAT}
+& \multicolumn{1}{c|}{\textbf{Base}}
+& \textbf{CAT} \\ \hline
+
+\textbf{End-to-End System}
+& \multicolumn{1}{c|}{4.236} & 4.420
+& \multicolumn{1}{c|}{4.354} & 4.548
+& \multicolumn{1}{c|}{4.690} & 4.912
+& \multicolumn{1}{c|}{4.511} & 4.747 \\ \hline
+
+
+\textbf{GPT-4o Backend}
+& \multicolumn{1}{c|}{4.169} & 4.175
+& \multicolumn{1}{c|}{4.285} & 4.292
+& \multicolumn{1}{c|}{4.612} & 4.625
+& \multicolumn{1}{c|}{4.438} & 4.449 \\ \hline
+
+\textbf{XR Processing}
+& \multicolumn{1}{c|}{0.067} & 0.068
+& \multicolumn{1}{c|}{0.069} & 0.070
+& \multicolumn{1}{c|}{0.078} & 0.079
+& \multicolumn{1}{c|}{0.073} & 0.074 \\ \hline
+
+\quad Frame Capture
+& \multicolumn{1}{c|}{0.005} & 0.005
+& \multicolumn{1}{c|}{0.006} & 0.006
+& \multicolumn{1}{c|}{0.006} & 0.006
+& \multicolumn{1}{c|}{0.005} & 0.005 \\ \hline
+
+\quad Response Parsing
+& \multicolumn{1}{c|}{0.041} & 0.042
+& \multicolumn{1}{c|}{0.041} & 0.042
+& \multicolumn{1}{c|}{0.047} & 0.048
+& \multicolumn{1}{c|}{0.045} & 0.046 \\ \hline
+
+\quad XR Rendering
+& \multicolumn{1}{c|}{0.021} & 0.021
+& \multicolumn{1}{c|}{0.022} & 0.022
+& \multicolumn{1}{c|}{0.025} & 0.025
+& \multicolumn{1}{c|}{0.023} & 0.023 \\ \hline
+
+
+\textbf{CAT Processing}
+& \multicolumn{1}{c|}{\multirow{6}{*}{N/A}} & 0.177
+& \multicolumn{1}{c|}{\multirow{6}{*}{N/A}} & 0.186
+& \multicolumn{1}{c|}{\multirow{6}{*}{N/A}} & 0.208
+& \multicolumn{1}{c|}{\multirow{6}{*}{N/A}} & 0.224
+\\ \cline{1-1}\cline{3-3}\cline{5-5}\cline{7-7}\cline{9-9}
+
+
+
+\quad Trigger Detection
+& \multicolumn{1}{c|}{} & 0.012
+& \multicolumn{1}{c|}{} & 0.013
+& \multicolumn{1}{c|}{} & 0.015
+& \multicolumn{1}{c|}{} & 0.014
+\\ \cline{1-1}\cline{3-3}\cline{5-5}\cline{7-7}\cline{9-9}
+
+\qquad QR-Coded Cup
+& \multicolumn{1}{c|}{} & 0.012
+& \multicolumn{1}{c|}{} & 0.013
+& \multicolumn{1}{c|}{} & 0.015
+& \multicolumn{1}{c|}{} & 0.014
+\\ \cline{1-1}\cline{3-3}\cline{5-5}\cline{7-7}\cline{9-9}
+
+\qquad Star Sticker
+& \multicolumn{1}{c|}{} & 0.010
+& \multicolumn{1}{c|}{} & 0.011
+& \multicolumn{1}{c|}{} & 0.013
+& \multicolumn{1}{c|}{} & 0.012
+\\ \cline{1-1}\cline{3-3}\cline{5-5}\cline{7-7}\cline{9-9}
+
+\qquad Text Card
+& \multicolumn{1}{c|}{} & 0.014
+& \multicolumn{1}{c|}{} & 0.015
+& \multicolumn{1}{c|}{} & 0.017
+& \multicolumn{1}{c|}{} & 0.016
+\\ \cline{1-1}\cline{3-3}\cline{5-5}\cline{7-7}\cline{9-9}
+
+\quad Sem. Perturbation
+& \multicolumn{1}{c|}{} & 0.165
+& \multicolumn{1}{c|}{} & 0.173
+& \multicolumn{1}{c|}{} & 0.193
+& \multicolumn{1}{c|}{} & 0.210
+\\ \hline
+
+
+
+\end{tabular}%
+}
+\end{table}
+
+
+
+\textbf{System Evaluation Results:} \textcolor{blue}{We measure end-to-end latency from headset frame capture until the generated instruction is rendered in the XR interface. As reported in Table~\ref{tab:cogxr_component_latency}, baseline CogXR requires 4.236--4.690 seconds per guidance cycle, whereas CAT-enabled CogXR requires 4.420--4.912 seconds. We independently evaluate three visual triggers, with only one trigger active per execution: a white cup with a QR code, a star-shaped sticker, and a card printed with text ``Hello.'' All three variants activate CAT with 100\% detection accuracy. The Trigger Detection row reports the mean detection latency across the three independently tested trigger variants for each task, while the remaining CAT-column values report the corresponding mean results across these three executions. Overall, CAT introduces 0.184 to 0.236 seconds of additional end-to-end latency, corresponding to approximately 4.34 to 5.23\% overhead relative to baseline CogXR.}
+
+
+
+%We evaluate both the baseline and malicious versions of CogXR and find that both maintain real-time operation, with end-to-end latency ranging from 440 to 720 milliseconds from frame capture to instruction delivery, thereby preserving natural user engagement. For the malicious CogXR, we also test multiple trigger object types to assess the effect of trigger variation. Specifically, we use a white cup with a QR code, a star-shaped sticker, and a card printed with text (e.g., ``Hello''). All objects successfully trigger the CAT with 100\% accuracy, with no observable differences in attack behavior across variants.
+
+
+% Since all tested trigger objects achieved equivalent performance, we report only the results obtained with the white cup with a QR code in both the user studies (Sections~\ref{sec:rubik'scubesolvinguserstudy} and~\ref{sec:cookingStudy}) for consistency.}
+
+%Since all trigger objects produced the same result, we used the white cup with a QR code as the trigger object throughout both user studies (Sections~\ref{sec:rubik'scubesolvinguserstudy} and~\ref{sec:cookingStudy}) for consistency.}
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=1\columnwidth]{figs/C_attack2_c.pdf}
+%     % \vspace{-5mm}
+%     \caption{Malicious CogXR during cooking. \textbf{(1-2)} The XR headset streams egocentric frames. \textbf{(3-4)} A predefined visual trigger (e.g., a cup with a QR) activates the Trojan, which alters the steak’s color. \textbf{(5)} Manipulated frames mislead the LVLM into giving wrong instructions. \textbf{(6–7)} The user expects medium-rare but gets well-done..}
+%     \label{fig:cookingattack}
+% \end{figure}
+
+% \textit{For more details of the CAT trigger detection and semantic payload execution, please refer to the supplementary material}}
+
+
+% \begin{figure} 
+% \centering 
+% \begin{adjustbox}{ width=1\columnwidth}
+% \begin{minipage}{1.2\columnwidth}
+% {\fontsize{5}{5}\selectfont
+% \begin{minted}[linenos,baselinestretch=0.9, frame=single,fontsize=\footnotesize,
+%                xleftmargin=1mm, xrightmargin=1mm,breaklines,breakanywhere,numbersep=6pt,framesep=2mm]{csharp}
+% void MaliciousCogXR ()
+% {
+%     string predefineTriggerObject  = GetPredefineTriggerObject();
+%     bool   isTriggered   = false;
+%     while (TaskIsActive()) {
+%         Texture2D frame = GetCurrentCameraFrame();
+%         bool triggerOK = DetectTrojanTriggerObject(frame,predefineTriggerObject);
+%         if (triggerOK && !isTriggered)
+%         {
+%             isTriggered = true;
+%             ExecutePayload(frame, GetTargetObject());
+%         }
+%     }
+% }
+
+% bool DetectTrojanTriggerObject(Texture2D frame, string predefineTrigger){
+%     Mat frameMat = ConvertToMat(frame);
+%     bool detected = ObjectDetectionPipeline(frameMat, predefineTrigger);
+%     return detected;
+% }
+
+% void ExecutePayload(Texture2D frame, string targetObject){
+%     ApplySemanticManipulation(frame, targetObject);
+% }
+% \end{minted}
+% }
+% \end{minipage}
+% \end{adjustbox}
+% \caption{ CAT trigger detection and semantic payload execution, representing malicious code embedded within a compromised third-party library.}
+% \label{fig:cognitive-trojan}
+% \vspace{-7mm}
+% \end{figure}
+
+
+\section{Cognitive Attack Trojan Evaluation}
+\label{sec: attack_cognitive}
+This section presents the user study design and results, demonstrating the effectiveness of our proposed CAT on CogXR system. 
+
+\textbf{Hypotheses:} The primary focus of this research is to identify and understand the impact of the  CAT on the CogXR system for both procedural and spatial-reasoning tasks. Specifically, we investigate whether the attack can bias the assistant’s guidance generation, producing incorrect or inefficient instructions that significantly increase task completion time, elevate cognitive demand, and disrupt the user's immersive experience. To systematically measure and evaluate the effects of the proposed  CAT on the performance and trustworthiness of the CogXR system, we formulate the following three hypotheses as the basis for our experimental study.
+\begin{itemize}[leftmargin=*]
+ \item \textbf{H1:} Cognitive attack Trojan will significantly increase task completion time compared to without cognitive attack Trojan condition.
+ \item \textbf{H2:} Participants under the cognitive attack Trojan will report higher cognitive demand than those in without cognitive attack Trojan condition.
+\item \textbf{H3:} The timing of triggering the cognitive attack Trojan (i.e., early, mid, or late stage) will have a differential effect, with early-stage attacks causing the most significant impact on task completion time and increased cognitive demand than later-stage attacks.
+\end{itemize}
+
+
+\textbf{Ethical Considerations.}
+This study was approved by the authors' Institutional Review Board (IRB). All participants provided written informed consent and brief demographic information. Privacy was protected throughout the study in compliance with IRB standards.
+% This user study was reviewed and approved by the Institutional Review Board (IRB) at the authors' University. Participants provided written informed consent and brief demographics (e.g., age, gender, prior XR use, task experience). All procedures complied with IRB standards, and privacy was protected throughout the study.
+
+\begin{figure*}
+\centering
+    \includegraphics[width=0.8\textwidth]{figs/FourAttack5.pdf}
+    \caption{User’s perspective during Rubik's Cube solving tasks using CogXR, where the timer is shown: (\textbf{a}) Baseline CogXR, (\textbf{b-d}) Malicious CogXR with a predefined visual trigger (e.g., a cup with a QR code) under the early-stage, mid-stage, and late-stage CAT conditions.}
+    %\caption{The user’s perspective during Rubik's Cube solving tasks using the CogXR system, where the timer is shown: (\textbf{a}) Baseline CogXR, (\textbf{b-d}) Malicious CogXR with the early-stage, mid-stage, and late-stage  CAT conditions.}
+    \label{fig:StudyRubikscube}
+\end{figure*}
+
+\begin{table}[]
+\centering
+\caption{Descriptive statistics of the time taken in seconds to complete rubik's cube and cooking tasks during the user study are presented for different study conditions: Baseline, Early-stage (ECAT), Mid-stage (MCAT), and Late-stage (LCAT).}
+\label{tab:task_time}
+%\vspace{-2mm}
+\resizebox{0.7\columnwidth}{!}{%
+\begin{tabular}{|c|cc|cc|}
+\hline
+\multirow{2}{*}{\textbf{Condition}} & \multicolumn{2}{c|}{\textbf{Rubik's cube}}       & \multicolumn{2}{c|}{\textbf{Cooking}}            \\ \cline{2-5} 
+                                    & \multicolumn{1}{c|}{\textbf{Mean}} & \textbf{SD} & \multicolumn{1}{c|}{\textbf{Mean}} & \textbf{SD} \\ \hline
+\textbf{Baseline}                   & \multicolumn{1}{c|}{198.5}         & 10.31        & \multicolumn{1}{c|}{701.2}         & 6.98        \\ \hline
+\textbf{ECAT}                        & \multicolumn{1}{c|}{283.4}         & 8.14         & \multicolumn{1}{c|}{877.8}         & 11.69         \\ \hline
+\textbf{MCAT}                        & \multicolumn{1}{c|}{251.3}         & 11.78        & \multicolumn{1}{c|}{850.4}         & 7.33        \\ \hline
+\textbf{LCAT}                        & \multicolumn{1}{c|}{229.7}         & 11.55        & \multicolumn{1}{c|}{801.4}         & 7.77        \\ \hline
+\end{tabular}
+}
+\end{table}
+
+
+\begin{table*}[t]
+\centering
+\caption{Pairwise Wilcoxon signed-rank test results for the NASA-TLX dimensions across the study conditions. Each entry is reported as \(X/Y\), where \(X\) denotes the Rubik's Cube task and \(Y\) denotes the steak-cooking task. MD: mental demand; PD: physical demand; TD: temporal demand; PR: performance; EF: effort; and FR: frustration.}
+\label{tab:wilcoxon_nasa_tlx_combined}
+%\vspace{-3mm}
+\resizebox{.9\textwidth}{!}{%
+\begin{tabular}{|c|cc|cc|cc|cc|cc|cc|}
+\hline
+\multirow{2}{*}{\textbf{Conditions}} &
+  \multicolumn{2}{c|}{\textbf{MD}} &
+  \multicolumn{2}{c|}{\textbf{PD}} &
+  \multicolumn{2}{c|}{\textbf{TD}} &
+  \multicolumn{2}{c|}{\textbf{PR}} &
+  \multicolumn{2}{c|}{\textbf{EF}} &
+  \multicolumn{2}{c|}{\textbf{FR}} \\ \cline{2-13}
+&
+  \multicolumn{1}{c|}{\textbf{W}} & \textbf{\(p\)}
+&
+  \multicolumn{1}{c|}{\textbf{W}} & \textbf{\(p\)}
+&
+  \multicolumn{1}{c|}{\textbf{W}} & \textbf{\(p\)}
+&
+  \multicolumn{1}{c|}{\textbf{W}} & \textbf{\(p\)}
+&
+  \multicolumn{1}{c|}{\textbf{W}} & \textbf{\(p\)}
+&
+  \multicolumn{1}{c|}{\textbf{W}} & \textbf{\(p\)}
+\\ \hline
+
+\textbf{Base vs. ECAT}
+& \multicolumn{1}{c|}{20/1}   & 0.00438/0.001
+& \multicolumn{1}{c|}{40/2}   & 0.0455/0.032
+& \multicolumn{1}{c|}{42/4}   & 0.033/0.059
+& \multicolumn{1}{c|}{21/5}   & 0.002/0.025
+& \multicolumn{1}{c|}{3/2}    & 0.0008/0.025
+& \multicolumn{1}{c|}{1/0}    & 0.00009/0.047
+\\ \hline
+
+\textbf{Base vs. MCAT}
+& \multicolumn{1}{c|}{52/3}   & 0.018/0.019
+& \multicolumn{1}{c|}{36/0}   & 0.184/0.052
+& \multicolumn{1}{c|}{38/7}   & 0.163/0.175
+& \multicolumn{1}{c|}{28/3}   & 0.006/0.036
+& \multicolumn{1}{c|}{17/8}   & 0.001/0.039
+& \multicolumn{1}{c|}{7/1}    & 0.0002/0.062
+\\ \hline
+
+\textbf{Base vs. LCAT}
+& \multicolumn{1}{c|}{50/5}   & 0.039/0.045
+& \multicolumn{1}{c|}{105/4}  & 0.912/0.073
+& \multicolumn{1}{c|}{69/10}  & 0.294/0.256
+& \multicolumn{1}{c|}{29/6}   & 0.045/0.049
+& \multicolumn{1}{c|}{35/11}  & 0.027/0.047
+& \multicolumn{1}{c|}{16/3}   & 0.0013/0.187
+\\ \hline
+
+\textbf{ECAT vs. MCAT}
+& \multicolumn{1}{c|}{63/7}   & 0.049/0.057
+& \multicolumn{1}{c|}{49/1}   & 0.0193/0.095
+& \multicolumn{1}{c|}{71/3}   & 0.528/0.078
+& \multicolumn{1}{c|}{51/5}   & 0.049/0.043
+& \multicolumn{1}{c|}{49/4}   & 0.034/0.042
+& \multicolumn{1}{c|}{43/6}   & 0.037/0.099
+\\ \hline
+
+\textbf{ECAT vs. LCAT}
+& \multicolumn{1}{c|}{46/3}   & 0.026/0.075
+& \multicolumn{1}{c|}{57/2}   & 0.207/0.145
+& \multicolumn{1}{c|}{52/2}   & 0.138/0.125
+& \multicolumn{1}{c|}{19/8}   & 0.003/0.102
+& \multicolumn{1}{c|}{18/2}   & 0.002/0.062
+& \multicolumn{1}{c|}{13/0}   & 0.003/0.148
+\\ \hline
+
+\textbf{MCAT vs. LCAT}
+& \multicolumn{1}{c|}{68/5}   & 0.447/0.107
+& \multicolumn{1}{c|}{59/4}   & 0.406/0.187
+& \multicolumn{1}{c|}{67/6}   & 0.418/0.461
+& \multicolumn{1}{c|}{61/3}   & 0.107/0.196
+& \multicolumn{1}{c|}{21/5}   & 0.005/0.094
+& \multicolumn{1}{c|}{54/3}   & 0.087/0.421
+\\ \hline
+
+\end{tabular}%
+}
+\end{table*}
+
+
+% \begin{table*}[]
+% \centering
+% \caption{The Wilcoxon rank pair test results across study conditions for NASA TLX in the Rubik’s Cube solving task. Where MD: mental demand, PD: physical demand, TD: temporal demand, PR: performance, EF: effort, and FR: frustration.}
+% %\vspace{-3mm}
+% \label{tab:Wilcoxn_NASA_TLX_RUBIKS}
+% \resizebox{0.65\textwidth}{!}{%
+% \begin{tabular}{|c|cc|cc|cc|cc|cc|cc|}
+% \hline
+% \multirow{2}{*}{\textbf{Conditions}} &
+%   \multicolumn{2}{c|}{\textbf{MD}} &
+%   \multicolumn{2}{c|}{\textbf{PD}} &
+%   \multicolumn{2}{c|}{\textbf{TD}} &
+%   \multicolumn{2}{c|}{\textbf{PR}} &
+%   \multicolumn{2}{c|}{\textbf{EF}} &
+%   \multicolumn{2}{c|}{\textbf{FR}} \\ \cline{2-13} 
+%  &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} \\ \hline
+% \textbf{Base vs. ECAT} &
+%   \multicolumn{1}{c|}{20} &
+%   0.00438 &
+%   \multicolumn{1}{c|}{40} &
+%   0.0455 &
+%   \multicolumn{1}{c|}{42} &
+%   0.033 &
+%   \multicolumn{1}{c|}{21} &
+%   0.002 &
+%   \multicolumn{1}{c|}{3} &
+%   0.0008 &
+%   \multicolumn{1}{c|}{1} &
+%   0.00009 \\ \hline
+% \textbf{Base vs, MCAT} &
+%   \multicolumn{1}{c|}{52} &
+%   0.018 &
+%   \multicolumn{1}{c|}{36} &
+%   0.184 &
+%   \multicolumn{1}{c|}{38} &
+%   0.163 &
+%   \multicolumn{1}{c|}{28} &
+%   0.006 &
+%   \multicolumn{1}{c|}{17} &
+%   0.001 &
+%   \multicolumn{1}{c|}{7} &
+%   0.0002 \\ \hline
+% \textbf{Base vs. LCAT} &
+%   \multicolumn{1}{c|}{50} &
+%   0.039 &
+%   \multicolumn{1}{c|}{105} &
+%   0.912 &
+%   \multicolumn{1}{c|}{69} &
+%   0.294 &
+%   \multicolumn{1}{c|}{29} &
+%   0.045 &
+%   \multicolumn{1}{c|}{35} &
+%   0.027 &
+%   \multicolumn{1}{c|}{16} &
+%   0.0013 \\ \hline
+% \textbf{ECAT vs. MCAT} &
+%   \multicolumn{1}{c|}{63} &
+%   0.049 &
+%   \multicolumn{1}{c|}{49} &
+%   .0193 &
+%   \multicolumn{1}{c|}{71} &
+%   0.528 &
+%   \multicolumn{1}{c|}{51} &
+%   0.049 &
+%   \multicolumn{1}{c|}{49} &
+%   0.034 &
+%   \multicolumn{1}{c|}{43} &
+%   0.037 \\ \hline
+% \textbf{ECAT vs. LCAT} &
+%   \multicolumn{1}{c|}{46} &
+%   0.026 &
+%   \multicolumn{1}{c|}{57} &
+%   0.207 &
+%   \multicolumn{1}{c|}{52} &
+%   0.138 &
+%   \multicolumn{1}{c|}{19} &
+%   0.003 &
+%   \multicolumn{1}{c|}{18} &
+%   0.002 &
+%   \multicolumn{1}{c|}{13} &
+%   0.003 \\ \hline
+% \textbf{MCAT vs. LCAT} &
+%   \multicolumn{1}{c|}{68} &
+%   0.447 &
+%   \multicolumn{1}{c|}{59} &
+%   0.406 &
+%   \multicolumn{1}{c|}{67} &
+%   0.418 &
+%   \multicolumn{1}{c|}{61} &
+%   0.107 &
+%   \multicolumn{1}{c|}{21} &
+%   0.005 &
+%   \multicolumn{1}{c|}{54} &
+%   0.087 \\ \hline
+% \end{tabular}%
+% }
+% \end{table*}
+
+\subsection{User Study: Rubik's Cube Solving } 
+\label{sec:rubik'scubesolvinguserstudy}
+This section presents the user study design and evaluation results of our proposed  CAT on CogXR for Rubik’s Cube-solving task.
+
+\subsubsection{User Study Setup}
+% \textbf{Participants:} Our user study involves $20$ volunteer participants aged from $20$ to $35$ years. For detailed demographic information of participants, including age, gender, racial profile, prior XR and  Rubik's Cube solving experience, please refer to the supplementary material. All participants volunteered for the user study, provided written informed consent, and received no reward.
+
+% \noindent\textbf{Procedure:} Participants began with a brief orientation to familiarize themselves with the CogXR interface and the study procedure. To validate our proposed CAT on the CogXR system for Rubik’s Cube-solving task, we designed a user study comprising four experimental conditions: baseline CogXR and malicious CogXR with early-stage, mid-stage, and late-stage  CAT, which was structured to systematically assess the system’s behavior and user performance under normal and adversarial scenarios, as shown in Figure~\ref{fig:StudyRubikscube}. 
+
+\textbf{Participants and Study Procedure:} Our user study involved $20$ volunteer participants aged $20$ to $35$ years. All participants volunteered for the study, provided written informed consent, and received no reward. Participants first completed a brief orientation to familiarize themselves with the CogXR interface and study procedure. To validate our proposed CAT within the CogXR system for the Rubik’s Cube-solving task, we designed a user study with four experimental conditions: baseline CogXR and malicious CogXR with early-stage CAT (ECAT), mid-stage CAT (MCAT), and late-stage CAT (LCAT). This allowed us to systematically evaluate system behavior and user performance under both normal and adversarial scenarios, as shown in Figure~\ref{fig:StudyRubikscube}. In each condition, participants attempted to solve a physical 3×3 Rubik's Cube with guidance from the CogXR. Furthermore, each study condition lasted 300 seconds. Participants were free to stop earlier if they chose to. The study took an average of 105 minutes to finish. The details of these conditions are described below.
+
+\noindent\textbf{Baseline CogXR:} In this condition, participants interacted with the CogXR system for Rubik's Cube solving task under normal, non-adversarial conditions. The system accurately perceived the Rubik's Cube state and provided real-time, step-by-step solving instructions through a combination of visual overlays (e.g., directional arrows) and textual cues (e.g., "Rotate front face clockwise"). A countdown timer was also displayed to show how much time was left to solve the Rubik's Cube. This baseline served as a performance benchmark, allowing us to evaluate the usability of the CogXR in supporting users without adversarial interference.
+
+\noindent\textbf{Malicious CogXR:} The remaining three conditions simulate our proposed  CAT described in Section~\ref{sec: model_cognitive}. In each of these conditions, the CogXR for Rubik's cube solving system included an embedded Trojan triggered by a predefined visual object in the camera's view. It is important to note that for this study, we used only the white cup with a QR code as the Trojan trigger object since all tested trigger variants achieved equivalent performance as described in Section~\ref{sec:systemimplementationandevaluation}, to ensure consistency across all participants and experimental runs. Once the trigger object appeared, the Trojan subtly altered the visual input by changing the color of a single cube face, causing the LVLM to misinterpret the cube's state and generate incorrect instructions. It is important to note that participants were unaware of the Trojan's presence during the ECAT, MCAT, and LCAT conditions. The adversarial manipulation was designed to be stealthy, ensuring that users remained unaware of the underlying manipulations throughout the study. To maintain timing consistency across all experimental conditions, the cognitive attack was constrained to a fixed 60-second window. Thus, to evaluate the effectiveness of the  CAT based on the stage of task progression, we divided the attack scenarios into the following:
+
+% For this study, we used a white cup as the Trojan trigger object to maintain consistency across all participants and experimental runs. However, any visually distinctive object can serve as an equally effective trigger, as long as it is predefined in the attack configuration. 
+
+\textit{ECAT:} The CAT was triggered at the very beginning of the task, specifically within the first 0–5 seconds of the 300-second solving window. This scenario assessed how an early attack impacts the solving trajectory from the outset and how it accumulates over time to affect task completion time and cognitive load.
+
+\textit{MCAT:} In this condition, the CAT was triggered during the middle of the 300-second solving window, specifically between 150–155 seconds. This allowed us to evaluate how introducing attacks during the middle of the task disrupts momentum and affects overall user confidence and performance.
+
+\textit{LCAT:} The CAT was initiated near the end of the 300-second solving window, specifically around 270-275 seconds. This scenario was beneficial for examining how late-stage adversarial disruptions affect user trust, error recovery, and frustration, particularly when users believe they are close to task completion.
+
+Furthermore, to eliminate bias from varying Rubik’s Cube difficulty, each study condition was evaluated using three randomly shuffled configurations. Note that the complexity of a Rubik’s Cube depends heavily on its initial configuration; some states may be nearly solved and require only a few rotations, while others demand more extended solution sequences. This variability directly affects the number of moves, LVLM-generated instructions, and the time and cognitive effort required from the user. For instance, one condition may be completed with minimal effort, while another may involve a much more complex configuration. To ensure fairness, each study condition used three randomized cube configurations, preserving consistency while accounting for natural variation in difficulty across scenarios. Each participant completed four study conditions: baseline CogXR and malicious CogXR with three cognitive Trojan variants under three randomly shuffled Rubik’s Cube configurations, enabling a comprehensive analysis of task success, perceived performance, cognitive load, and user experience with the CogXR system. To control for cube complexity, participants were allotted 300 seconds per condition, with each condition repeated across three unique configurations over three days. On each day, all four conditions were performed on a different shuffled cube state, with the sequence repeated using new configurations on subsequent days.  On average, the whole study session took approximately 105 minutes to complete. This design ensured fairness, reduced bias from initial cube states, and maintained data quality by distributing sessions over multiple days. Participants were also given five-minute breaks between conditions to minimize fatigue. However, they were also encouraged to rest longer if needed to avoid cognitive fatigue. Additionally, we recorded task completion time and collected user feedback using the NASA TLX~\cite{hart1988development} after each condition. Following the completion of all four conditions, each participant engaged in a 10-minute post-task interview. These sessions began with open-ended questions (e.g., user feedback) about their experience using both baseline and malicious CogXR systems. All study conditions were presented in a counterbalanced order to prevent ordering effects.
+
+
+% \vspace{-1mm}
+\subsubsection{Study Evaluation Results}
+\label{sec:cuberesult}
+This section presents the detailed results of the user study to evaluate the effects of the  CAT on the CogXR Rubik's cube-solving. We analyze our experimental data to study users feedback when encountering attack during Rubik’s cube-solving and then analyze the post-task user study data. The details are as follows.
+
+\textbf{Task Completion Time:} The descriptive statistics (e.g., mean and standard deviation (SD)) of the measured task completion time for completing the Rubik's Cube solving task for different study conditions of three random cube states are shown in Table~\ref{tab:task_time}. Our results show that the task completion time is higher for cognitive attack conditions, specifically during the early stage of cognitive attack. From Table~\ref{tab:task_time}, we observe that during the early-stage cognitive attack, the participant takes an average of 283.4 seconds to solve the Rubik’s cube, which is $43\%$, $12.8\%$, and $23.4\%$ higher than baseline (without attack), mid-stage, and late-stage cognitive attack conditions. This shows that due to the attack, the system significantly generates incorrect solving instructions, leading users to make misguided moves, thus significantly increasing the task completion time. Furthermore, to test the significance of these differences in means, we conduct a Shapiro-Wilk test~\cite{razali2011power}, after which we determine that the obtained data are not normally distributed. Therefore, we conduct the post-hoc Mann-Whitney U tests to find statistical significance between the task completion times of these conditions, as shown in Table~\ref{tab:time_man_whiteney}. We find a significant difference ($p < 0.05$) while comparing task completion time for these four conditions, which supports \textbf{H1}. These results show that cognitive attacks substantially increased task completion time by introducing subtle modifications that caused the LVLM to misinterpret the cube’s state and issue incorrect instructions.
+
+
+\begin{table}[]
+\centering
+\caption{Mann–Whitney U test results comparing task completion time across four different study conditions.}
+\label{tab:time_man_whiteney}
+% \vspace{-2mm}
+\resizebox{0.7\columnwidth}{!}{%
+\begin{tabular}{|c|cc|cc|}
+\hline
+\multirow{2}{*}{\textbf{Conditions}} & \multicolumn{2}{c|}{\textbf{Rubik'c Cube}} & \multicolumn{2}{c|}{\textbf{Cooking}} \\ \cline{2-5} 
+ & \multicolumn{1}{c|}{\textbf{U}} & \textbf{P} & \multicolumn{1}{c|}{\textbf{U}} & \textbf{P} \\ \hline
+\textbf{Baseline vs. ECAT} & \multicolumn{1}{c|}{1} & 0.000001 & \multicolumn{1}{c|}{3} & 0.0009 \\ \hline
+\textbf{Baseline vs, MCAT} & \multicolumn{1}{c|}{13} & 0.00001 & \multicolumn{1}{c|}{8} & 0.007 \\ \hline
+\textbf{Baseline vs. LCAT} & \multicolumn{1}{c|}{58} & 0.0012 & \multicolumn{1}{c|}{19} & 0.0065 \\ \hline
+\textbf{ECAT vs. MCAT} & \multicolumn{1}{c|}{30} & .0002 & \multicolumn{1}{c|}{25} & 0.005 \\ \hline
+\textbf{ECAT vs. LCAT} & \multicolumn{1}{c|}{4} & 0.001 & \multicolumn{1}{c|}{13} & 0.008 \\ \hline
+\textbf{MCAT vs. LCAT} & \multicolumn{1}{c|}{79} & 0.047 & \multicolumn{1}{c|}{31} & 0.053 \\ \hline
+\end{tabular}
+}
+\end{table}
+
+
+
+\textbf{Cognitive Load:} The cognitive load is measured using the NASA TLX assessment across four study conditions. We extended our analysis by grouping the NASA TLX assessment of each dimension for different study conditions to determine the statistical significance of the data. Comparing the study conditions allows us to quantify how stage‑specific cognitive attacks increase cognitive demand during Rubik’s Cube solving. Figure~\ref{fig:NASA_TLX_RUBIKS} shows the average score of individual components of the NASA TLX for different participants for different study conditions. This box plot also suggests that the LVLM-guided intelligent cognitive assistant demands a higher mental workload from users during the early stage of a cognitive attack, which supports \textbf{H2}. \textcolor{blue}{Furthermore, to statistically assess the impact of cognitive attacks on participants' cognitive load, we conduct a Shapiro-Wilk test~\cite{razali2011power}, which indicates that the collected data are not normally distributed. Therefore, we use the Friedman test to examine the overall differences across the four conditions. The results indicate a significant overall difference in the collected NASA--TLX scores ($\chi^2 = 240.31$, $p = 0.00001$). Following this significant result, we conduct pairwise Wilcoxon signed-rank tests~\cite{taheri2013generalization}, as reported in Table~\ref{tab:wilcoxon_nasa_tlx_combined}. The pairwise results indicate significant differences between the baseline and malicious CogXR conditions across several workload dimensions ($p < 0.05$). For mental demand in the Rubik's Cube task, all pairwise comparisons are significant except MCAT versus LCAT ($W = 68$, $p = 0.447$). In particular, ECAT differs significantly from Base, MCAT, and LCAT ($p < 0.05$), indicating that early-stage attacks produce the most pronounced increase in cognitive load. Overall, these findings support \textbf{H3} and demonstrate that CAT substantially increases participants' mental workload, effort, and frustration while performing cognitive tasks.}
+
+
+
+% Furthermore, to statistically assess the impact of the cognitive attacks on participants' cognitive load, we conduct a Shapiro-Wilk test~\cite{razali2011power}, after which we determine that the obtained data are not normally distributed. Therefore, we conduct the  Wilcoxon signed rank tests~\cite{taheri2013generalization} to quantify the difference between these four study conditions. The Friedman test indicates that there are significant differences in cognitive demand between the collected NASA TLX assessment score in the four study conditions (${\chi}^2$ = $240.31$, p = $0.00001$). For post hoc comparisons, we conduct Wilcoxon signed-rank tests~\cite{taheri2013generalization} for each pair, as shown in Table~\ref{tab:wilcoxon_nasa_tlx_combined}. A significant difference is found in the malicious CogXR conditions vs. the baseline CogXR by comparing the measured P-value (p-values $<$ $0.05$). The results confirm that CAT has a significant difference, in which the experimental environment caused a significant increase in the cognitive load. For example, the P-value of the mental demand for the Wilcoxon paired test of all study conditions is (P $<$ $0.05$) except the \textbf{MCAT vs. LCAT ($W$ = $59$, $p$ = $0.406$)}, with a similar trend observed across all NASA TLX dimensions. Notably, ECAT shows the most significant differences compared with all other conditions (P $<$ $0.05$), supporting \textbf{H3} and confirming that CAT substantially increases mental workload, effort, and frustration while performing cognitive tasks.
+
+
+
+% . A similar phenomenon is also observed in other NASA TLX dimensions. However, we observe that during ECAT, we find more significant differences with other study conditions (P $<$ $0.05$), which supports \textbf{H3}. This indicates that the proposed CAT significantly increases the mental workload, effort, and frustration experienced by users while performing cognitive tasks.
+
+
+\subsection{Additional User Study: Cooking}
+\label{sec:cookingStudy}
+We conducted an additional user study in a cooking scenario to examine whether the CAT effects generalize across tasks, following a similar design to the Rubik's Cube solving experiment.
+
+% Details are provided below.
+% We also conducted an additional user study of the CAT in a cooking scenario to examine whether its effects generalize to a different task. This study followed a similar design to the Rubik's Cube-solving experiment, with participants performing a guided cooking task under baseline CogXR and malicious CogXR conditions. The details are provided below.
+
+ % \textit{For more details of participant demographics information (e.g., age, gender, racial profile, prior XR experience), please refer to the supplementary material.}
+
+
+\subsubsection{Participants, Study Task, and  Procedure}
+\label{sec:studysetupcooking}
+% \textbf{Participants:} We recruited seven volunteer participants aged from 23 to 38 years for the Steak cooking task study. Participants have diverse backgrounds in gender, ethnicity, and prior XR or steak cooking experience. All participants provided written informed consent and received no reward.
+We recruited seven volunteer participants aged from 23 to 38 years for the Steak cooking task study. Participants had diverse backgrounds in gender, ethnicity, and prior XR or steak-cooking experience. All participants provided written informed consent and received no reward. In this study, participants were asked to prepare a pan-seared steak to a medium-rare doneness using CogXR for the cooking task in a kitchen environment. At the beginning, each participant went through a brief orientation to become familiar with the interface, the CogXR's instructions, and the basic steps of the cooking task. For this cooking task, we chose to cook a medium-rare steak, as it is one of the most preferred levels of doneness among consumers (approximately 39–42\%)~\cite{prill2019published}. Culinary guidelines recommend cooking a medium-rare steak for about 3–4 minutes per side, until the internal temperature reaches 130–135°F ~\cite{partstown_steak_doneness,kalejunkie}. Based on these guidelines and to account for variations in stove heat-up times, preparation methods, and participant pacing, each dy condition was capped at approximately 780–840 seconds, allowing a 60–120 second buffer beyond the typical cooking duration. Each participant completed four cooking trials: baseline CogXR and malicious CogXR with three CAT conditions. In each condition, the CogXR provided step-by-step instructions and visual overlays for tasks such as preheating the pan, timing each side of the steak, flipping the steak, and checking its doneness. The three attack conditions introduced the Trojan trigger at different cooking stages: early-stage CAT (ECAT, $\approx$0--120\,s), mid-stage CAT (MCAT, $\approx$240--360\,s), and late-stage CAT (LCAT, $\approx$600--720\,s), as illustrated in Figure~\ref{fig:StudyCooking}. Note that, consistent with the Rubik's Cube study, we used the same white cup with a QR code as the Trojan trigger object in this study, because all trigger variants performed equivalently, as discussed in Section~\ref{sec:systemimplementationandevaluation}. Conditions were separated by 5-minute breaks for recovery and setup, resulting in overall session durations of approximately 67–71 minutes. The conditions were performed in a counterbalanced order to prevent ordering effects. All participants completed all study conditions without any safety incidents or withdrawals, indicating that the procedure was tolerable and safe. Additionally, we recorded task completion time and collected user feedback using the NASA TLX, and also conducted a task interview similar to the Rubik's Cube task. \textit{Note that, for further details on each study condition and participant demographics (e.g., age, gender, etc.) for both studies, please refer to the supplementary material.}
+
+\begin{figure}
+    \centering
+    %\vspace{-2mm}
+    \includegraphics[width=.85\columnwidth]{figs/NASATLX_RC.pdf}
+    \caption{Average NASA TLX scores across each dimension for different study conditions during Rubik’s Cube task.}
+    \label{fig:NASA_TLX_RUBIKS}
+\end{figure}
+
+
+\begin{figure*}[t]
+\centering
+    \includegraphics[width=.8\textwidth]{figs/CookingAttackStage4.pdf}
+    \caption{User's perspective during cooking tasks using the CogXR system, where the timer is shown: (\textbf{a}) Baseline CogXR, (\textbf{b-d}) Malicious CogXR with a predefined visual trigger (e.g., a cup with a QR code) under early-stage, mid-stage, and late-stage CAT conditions.}
+    \label{fig:StudyCooking}
+\end{figure*}
+
+% \begin{table*}[]
+% \centering
+% \caption{The Wilcoxon rank pair test between the different study conditions of the NASA TLX in the cooking user study.}
+% \label{tab:Wilcoxn_NASA_TLX_COOKING}
+% \resizebox{0.65\textwidth}{!}{%
+% \begin{tabular}{|c|cc|cc|cc|cc|cc|cc|}
+% \hline
+% \multirow{2}{*}{\textbf{Conditions}} &
+%   \multicolumn{2}{c|}{\textbf{MD}} &
+%   \multicolumn{2}{c|}{\textbf{PD}} &
+%   \multicolumn{2}{c|}{\textbf{TD}} &
+%   \multicolumn{2}{c|}{\textbf{PR}} &
+%   \multicolumn{2}{c|}{\textbf{EF}} &
+%   \multicolumn{2}{c|}{\textbf{FR}} \\ \cline{2-13} 
+%  &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} &
+%   \multicolumn{1}{c|}{\textbf{W}} &
+%   \textbf{P} \\ \hline
+% \textbf{Base vs. ECAT} &
+%   \multicolumn{1}{c|}{1} &
+%   0.001 &
+%   \multicolumn{1}{c|}{2} &
+%   0.032 &
+%   \multicolumn{1}{c|}{4} &
+%   0.059 &
+%   \multicolumn{1}{c|}{5} &
+%   0.025 &
+%   \multicolumn{1}{c|}{2} &
+%   0.025 &
+%   \multicolumn{1}{c|}{0} &
+%   0.047 \\ \hline
+% \textbf{Base vs. MCAT} &
+%   \multicolumn{1}{c|}{3} &
+%   0.019 &
+%   \multicolumn{1}{c|}{0} &
+%   0.052 &
+%   \multicolumn{1}{c|}{7} &
+%   0.175 &
+%   \multicolumn{1}{c|}{3} &
+%   0.036 &
+%   \multicolumn{1}{c|}{8} &
+%   0.039 &
+%   \multicolumn{1}{c|}{1} &
+%   0.062 \\ \hline
+% \textbf{Base vs. LCAT} &
+%   \multicolumn{1}{c|}{5} &
+%   0.045 &
+%   \multicolumn{1}{c|}{4} &
+%   0.073 &
+%   \multicolumn{1}{c|}{10} &
+%   0.256 &
+%   \multicolumn{1}{c|}{6} &
+%   0.049 &
+%   \multicolumn{1}{c|}{11} &
+%   0.047 &
+%   \multicolumn{1}{c|}{3} &
+%   0.187 \\ \hline
+% \textbf{ECAT vs. MCAT} &
+%   \multicolumn{1}{c|}{7} &
+%   0.057 &
+%   \multicolumn{1}{c|}{1} &
+%   0.095 &
+%   \multicolumn{1}{c|}{3} &
+%   0.078 &
+%   \multicolumn{1}{c|}{5} &
+%   0.043 &
+%   \multicolumn{1}{c|}{4} &
+%   0.042 &
+%   \multicolumn{1}{c|}{6} &
+%   0.099 \\ \hline
+% \textbf{ECAT vs. LCAT} &
+%   \multicolumn{1}{c|}{3} &
+%   0.075 &
+%   \multicolumn{1}{c|}{2} &
+%   0.145 &
+%   \multicolumn{1}{c|}{2} &
+%   0.125 &
+%   \multicolumn{1}{c|}{8} &
+%   0.102 &
+%   \multicolumn{1}{c|}{2} &
+%   0.062 &
+%   \multicolumn{1}{c|}{0} &
+%   0.148 \\ \hline
+% \textbf{MCAT vs. LCAT} &
+%   \multicolumn{1}{c|}{5} &
+%   0.107 &
+%   \multicolumn{1}{c|}{4} &
+%   0.187 &
+%   \multicolumn{1}{c|}{6} &
+%   0.461 &
+%   \multicolumn{1}{c|}{3} &
+%   0.196 &
+%   \multicolumn{1}{c|}{5} &
+%   0.094 &
+%   \multicolumn{1}{c|}{3} &
+%   0.421 \\ \hline
+% \end{tabular}%
+% }
+% \end{table*}
+
+% Three attack conditions introduced a Trojan trigger at different cooking stages (early: $\approx$0--120\,s, mid: $\approx$240--360\,s, or late: $\approx$600--720\,s), as shown in Figure~\ref{fig:StudyCooking}.
+
+% \textit{For further details of each study condition, please refer to the supplementary material.} 
+
+
+
+% \textit{For more details of the step-by-step descriptions of each study condition in the steak cooking task, please refer to the supplementary material.}
+% However,  the attack is not limited to a single object, any visually recognizable object can serve as an equally effective trigger.
+
+% \vspace{-2mm}
+\subsubsection{Study Evaluation Results}
+This section presents the results of the user study evaluating the effects of the CAT on the cooking task. The details are as follows.
+
+
+\textbf{Task Completion Time:} Descriptive statistics (e.g., mean, SD) for cooking task completion times across all study conditions are summarized in Table~\ref{tab:task_time}. Likewise, in the Rubik's cube-solving task, we observe that task completion time is higher for cognitive attack conditions, specifically during the ECAT condition. For instance, during the ECAT condition, the participant takes an average of 877.8 seconds to complete the steak doneness, which is $25.2\%$, $3.2\%$, and $9.5\%$ higher than baseline CogXR, malicious CogXR MCAT and LCAT conditions. Furthermore, a Shapiro-Wilk test confirms that the obtained data are not normally distributed, so a non-parametric Mann–Whitney U test has been employed for pairwise comparisons, as shown in Table~\ref{tab:time_man_whiteney}. We find a significant difference ($p < 0.05$) while comparing task completion time for these four conditions, which supports \textbf{H1}. These results show that cognitive attacks increase task completion time by causing the LVLM to misinterpret cooking steps, leading to the generation of incorrect instructions. As a result, the steak frequently ended up overcooked or even burned instead of the intended medium-rare doneness.
+
+
+\textbf{Cognitive Load:} Figure~\ref{fig:NASA_TLX_COOKING} shows the average score of individual components of the NASA TLX for different participants for different study conditions. This box plot indicates that cognitive demand is highest during the ECAT condition, suggesting that the malicious CogXR imposes the most significant mental workload when the cognitive attack occurs at an early stage, which supports \textbf{H2}. Furthermore,  a Shapiro-Wilk test shows the obtained data deviates from normality. \textcolor{blue}{Therefore, we conduct a Friedman test to examine the overall differences across conditions. The Friedman test indicates a significant overall effect of the study condition on perceived cognitive workload ($p<0.05$). Following this significant result, we conduct pairwise Wilcoxon signed-rank tests~\cite{taheri2013generalization}, as reported in Table~\ref{tab:wilcoxon_nasa_tlx_combined}. The pairwise results show significant differences between the baseline and malicious CogXR conditions across several workload dimensions ($p<0.05$). In particular, ECAT produces higher mental demand than MCAT and LCAT, supporting \textbf{H3}. Overall, these findings indicate that CAT increases participants' mental workload, effort, and frustration during the steak-cooking task.}
+
+
+
+
+% Furthermore,  a Shapiro-Wilk test shows the obtained data deviate from normality. Therefore, we conduct Wilcoxon signed-rank tests~\cite{taheri2013generalization} to compare each condition. A Friedman test confirms that there are significant differences in perceived cognitive load across the four conditions (p~$<$0.05). Furthermore, the Wilcoxon signed-rank test reveals a significant difference in the malicious CogXR with three conditions vs. the baseline CogXR condition with a measured P-value (p-values $<$ $0.05$), as shown in Table~\ref{tab:wilcoxon_nasa_tlx_combined}. Notably, malicious CogXR ECAT has a higher mental demand than the malicious CogXR MCAT and LCAT conditions, supporting \textbf{H3}. This indicates that the proposed attack significantly heightens users’ mental workload, effort, and frustration during the steak-cooking task.
+
+ \begin{figure}
+    \centering
+    \includegraphics[width=.85\columnwidth]{figs/NASATLX_C.pdf}
+     % \vspace{-7mm}
+    \caption{Average NASA-TLX scores across individual workload dimensions for each study condition in the cooking tasks.}
+    \label{fig:NASA_TLX_COOKING}
+\end{figure}
+
+\section{Discussion}
+
+Through two user studies (e.g., Rubik’s Cube solving and cooking), we demonstrated that our proposed CAT substantially increases task completion time and elevates cognitive demand, ultimately disrupting immersive flow and trust in the assistant, supporting our \textbf{H1} and \textbf{H2}. Quantitative results show that participants required, on average, 43\% and 25.2\% more time to complete the Rubik's cube-solving and cooking tasks, respectively, under cognitive attack conditions than under the baseline CogXR. Furthermore, this increase was most pronounced during the malicious CogXR ECAT condition, where misguidance compounded over time, leading to confusion and frustration, which supports our \textbf{H3}. For instance, during the ECAT, participants required 12.8\% more time than in the MCAT and 23.4\% more than in the LCAT for solving Rubik's Cube. In cooking, ECAT similarly imposed 3.2\% and 9.5\% additional time compared with MCAT and LCAT, respectively. Moreover, Participants also reported significantly elevated cognitive load across NASA TLX dimensions, including mental, physical, temporal demand, frustration, and perceived effort (see Figures~[\ref{fig:NASA_TLX_COOKING}, \ref{fig:NASA_TLX_RUBIKS}] and Table~\ref{tab:wilcoxon_nasa_tlx_combined}). Furthermore, participants' feedback offers rich insight into how the CAT affected their experiences across study conditions. For instance, one participant \textbf{P3} stated that \textit{" In the baseline condition, the CogXR made solving the Rubik's cube much easier, like having a coach guiding me step-by-step, helping me stay focused"}. The same participant \textbf{P3} expressed that \textit{``During mid-stage attack condition, everything was smooth initially, then suddenly the steps didn't match the cube. It broke my focus, forcing me to go back several moves”.} Similarly, in the cooking scenario, one participant \textbf{P1} stated that \textit{"In the baseline condition, CogXR was super helpful."} However, during late-stage attack, the same participant \textbf{P1} noted: \textit{"Near the end, the assistant said the steak was ready. When I sliced it, it was still rare. Fixing it to medium-rare required extra steps, which were frustrating."} These contrasting experiences highlight how subtle misinformation from the Trojan can disrupt natural task flow and increase the task completion time.
+
+% Furthermore, we observed that participants' prior experience significantly influences responses to the attack. Experienced participants tended to require less time, while novices typically took longer, resulting in greater confusion and frustration. For instance, during the LCAT condition, experienced participants were more likely to identify inconsistencies quickly. In contrast, novices took longer to recognize errors and reported higher frustration. For instance, a frequent cube-solver \textbf{P2} stated, 
+
+Furthermore, we observed that participants' prior experience significantly influences responses to the attack. Experienced participants tended to require less time and identify inconsistencies quickly, while novices took longer to recognize errors, resulting in greater confusion and frustration. For instance, during the LCAT condition, a frequent cube-solver \textbf{P2} stated,\textit{"I knew that after one or two more moves, the cube should be solved, but the assistant told me to rotate the bottom face again, that didn't make sense. That's when I knew something was wrong."} In contrast, \textbf{P16}, a novice solver, shared, \textit{"I didn't realize something was wrong at first. I thought I was just doing it incorrectly. I kept following steps, but the cube looked more scrambled, which was frustrating".} A similar pattern emerged in cooking. Participant \textbf{P4}, with prior steak cooking experience, quickly became skeptical: \textit{"I wanted medium-rare, but the assistant kept adding time. Seeing the steak darken, I pulled it off. If I had kept following, it would have ended up well-done."} Conversely, participant \textbf{P2}, who rarely cooks, expressed self-doubt: \textit{"I asked for medium-rare, but the assistant made it well-done. I thought maybe I did something wrong and started doubting myself."} Post-study interviews further illustrated the Trojan's stealthiness; over 79\% of participants did not notice the manipulation and instead blamed themselves.
+
+Since no previous work has applied a stealthy cognitive attack Trojan that targets LVLM-guided intelligent XR cognitive assistants by subtly manipulating system perception to degrade user task performance, our results are not directly comparable with those of previous works~\cite{xiu2025viddar, kundu2025securing, cheng2023exploring, tseng2022dark, chandio2024stealthy, slocum2024doesn, bonnail2023memory, o2024viewpoint, sajid2025just, su2024remote,kundu2025privatexr}. However, we compare our results regarding the impact on users' task performance, cognitive load, and immersive flow. Prior works focused mainly on various security threats in XR, such as PMA that distort human sensory perception~\cite{tseng2022dark}, cybersickness attacks that disrupt immersion~\cite{kundu2025securing}, and obstruction or information manipulation attacks~\cite{xiu2025viddar} that interfere with physical-world interpretation. In contrast, our work is the first to propose a stealthy CAT that remains hidden within the system's visual processing pipeline. Once triggered, it significantly disrupts task flow, increases task completion time and cognitive demand, and elevates user frustration, ultimately reducing trust in the XR cognitive assistant. Although this study focused on Rubik's Cube solving and cooking tasks, our findings are broadly applicable to various other LVLM-guided intelligent XR assistants that rely on real-time visual understanding and instruction generation, including Sudoku solving, furniture assembly, and coffee making~\cite{srinidhi2024xair, qu2024looking, botto2020augmented}. \textit{To see how our proposed cognitive attacks can be applied to other XR tasks, please check the supplementary material.}
+
+
+
+% \section{Potential Defenses}
+% \label{sec:defense-strategy}
+% To mitigate the CAT identified in this study, we suggest exploring defensive strategies across the perception, reasoning, and interaction layers. We describe these strategies below.
+
+% \noindent\textbf{Perception layer:} Cross-validating multiple XR sensors (camera, depth, audio) can expose inconsistencies revealing tampering. For instance, visual-depth mismatches may reveal forged objects. LVLM analyzers can automatically flag suspicious objects or attacker-placed triggers~\cite{xiu2024lobstar}. Additionally, content provenance checks and hardware-level isolation reinforce input integrity.
+
+% \noindent\textbf{Reasoning layer:} At this layer, defenses focus on bolstering the LVLM’s robustness and transparency. Real-time anomaly detection could monitor the assistant’s outputs for logical inconsistencies, pausing or adjusting guidance when something seems amiss. Incorporating explainable AI techniques provides insight into the LVLM’s decisions, making it easier to spot anomalies triggered by stealthy attacks~\cite{kundu2025securing}. Running the LVLM in a trusted execution environment (TEE) can also safeguard the reasoning process.
+
+% \noindent\textbf{Interaction layer:} Finally, a transparent, traceable interface can help users verify and trust the assistant’s guidance. For example, the UI might display each instruction’s context or confidence level and flag any unusual guidance. Simple cues (e.g., highlighting what the assistant focuses on) can alert users to odd fixations potentially caused by malicious interference. Since XR visuals can be manipulated to deceive users~\cite{tes}, clearly labeling AI-generated content and using translucent overlays help users discern real versus artificial cues. Collectively, these strategies strengthen cognitive robustness in LVLM-powered intelligent XR systems and enhance system integrity and user trust.
+
+
+\section{Potential Defenses}
+\label{sec:defense-strategy}
+To mitigate the CAT identified in this study, we suggest exploring defensive strategies across three layers. At the perception layer, cross-validating multiple XR sensors (e.g., camera, depth, audio, etc.) can expose inconsistencies that reveal tampering, where visual-depth mismatches may indicate forged objects; LVLM analyzers can automatically flag suspicious triggers~\cite{xiu2024lobstar}, and content provenance checks alongside hardware-level isolation reinforce input integrity. Building on this, the reasoning layer focuses on bolstering the LVLM's robustness and transparency through real-time anomaly detection that monitors outputs for logical inconsistencies, explainable AI techniques that provide insight into the LVLM's decisions to spot anomalies triggered by stealthy attacks~\cite{kundu2025securing}, and running the LVLM in a trusted execution environment (TEE) to safeguard the reasoning process. Finally, at the interaction layer, a transparent and traceable interface can help users verify guidance by displaying confidence levels or flagging unusual instructions. Since XR visuals can be manipulated to deceive users~\cite{tseng2022dark}, clearly labeling generative AI-generated content helps users discern real versus artificial cues. Collectively, these layered strategies strengthen cognitive robustness in LVLM-powered intelligent XR systems and enhance system integrity and user trust.
+
+% To mitigate the cognitive attack Trojan identified in this study, we suggest exploring defensive strategies across the perception, reasoning, and interaction layers. We describe these strategies below.
+
+% \noindent\textbf{Perception layer:} Cross-validating multiple XR sensors (camera, depth, audio) can expose inconsistencies revealing tampering. For instance, visual-depth mismatches may reveal forged objects. LVLM analyzers can automatically flag suspicious objects or attacker-placed triggers~\cite{xiu2024lobstar}. Additionally, content provenance checks and hardware-level isolation reinforce input integrity.
+
+% \noindent\textbf{Reasoning layer:} At this layer, defenses focus on bolstering the LVLM’s robustness and transparency. Real-time anomaly detection could monitor the assistant’s outputs for logical inconsistencies, pausing or adjusting guidance when something seems amiss. Incorporating explainable AI techniques provides insight into the LVLM’s decisions, making it easier to spot anomalies triggered by stealthy attacks~\cite{kundu2025securing}. Running the LVLM in a trusted execution environment (TEE) can also safeguard the reasoning process.
+
+% \noindent\textbf{Interaction layer:} A transparent, traceable interface can help users verify guidance, for example by displaying confidence levels or flagging unusual instructions. Since XR visuals can be manipulated to deceive users~\cite{wang2024dark}, clearly labeling AI-generated content helps users discern real versus artificial cues. Collectively, these layered strategies strengthen cognitive robustness in LVLM-powered intelligent XR systems.
+% Firstly, due to time, resource, and budgetary constraints, our user study involved a relatively small and demographically limited participant pool with imbalanced gender representation and limited demographic diversity, and the evaluation was restricted to two task domains.
+
+\section{Limitations and Future Work}
+Our proposed CAT for the LVLM-guided intelligent XR cognitive assistant systems has a few limitations. Firstly, due to time, resource, and budget constraints, we were unable to conduct a large-scale user study and kept our evaluation limited to two representative tasks. Future work will include a larger participant pool and extend the evaluation to safety-critical tasks (e.g., hazard localization in firefighting, route planning in search and rescue, etc.). Another limitation of our proposed attack is that we evaluated its effectiveness within a fixed window, i.e., a 60-second window, during the user study to analyze participants' behavior and task performance. In the future, we will evaluate and analyze the impact of CAT across varying time windows. Our future work will explore the attack across varied XR platforms, settings, and broader task categories with more prolonged exposure durations~\cite{srinidhi2024xair, behravan2025generative, qu2024looking}, as well as investigate mitigation strategies presented in Section~\ref{sec:defense-strategy} to enhance the resilience of LVLM-guided intelligent XR cognitive assistant systems against such vulnerabilities.
+
+%Our proposed CAT for the LVLM-guided intelligent XR cognitive assistant systems has a few limitations. Firstly, we did not conduct a large scale study with many participants due to time, resource, and budget constraints, and the evaluation was limited to two tasks. Future work will include a larger participant pool and extend the evaluation to safety-critical tasks (e.g., hazard localization in firefighting, route planning in search and rescue, etc.). Another limitation of our proposed attack is that we evaluated its effectiveness within a 60-second time window during the user study. Furthermore, for the same reason, we could not explore the attack's impact across varying time frames, such as shorter or longer windows, which could influence user behavior and task performance differently. Exploring the effects of the attack over varied time windows remains an important direction for future work. Also, our findings are based on a specific hardware-software setup and may not generalize to other setups or future technologies. Future work will explore the attack across varied XR platforms, settings, and broader task categories with more prolonged exposure durations~\cite{srinidhi2024xair, behravan2025generative, qu2024looking}, as well as investigate mitigation strategies presented in Section~\ref{sec:defense-strategy} to enhance the resilience of LVLM-guided intelligent XR cognitive assistant systems against such vulnerabilities.
+
+
+% Our proposed CAT for the LVLM-guided intelligent XR cognitive assistant systems has a few limitations. Firstly, we did not conduct a large-scale trial with many participants due to the lack of time, resources, and budgetary constraints. For instance, our user study was conducted with a relatively small and demographically limited participant pool, featuring imbalanced gender representation and lacking explicit consideration of factors such as demographic backgrounds, gender, etc., Another limitation of our proposed attack is that we evaluated its effectiveness within a 60-second time window during the user study. Furthermore, for the same reason, we could not explore the attack's impact across varying time frames, such as shorter or longer windows, which could influence user behavior and task performance differently. Exploring the effects of the attack over varied time windows remains an important direction for future work. Also, our findings are based on a specific hardware-software setup, which may not be generalized to other setups or future technologies.  Future work will explore the attack across varied XR platforms, settings, and interactive tasks discussed in   with more prolonged exposure durations~\cite{srinidhi2024xair, behravan2025generative, qu2024looking}. Moreover, it would be interesting to investigate possible mitigation strategies for the proposed CAT presented in Section~\ref{sec:defense-strategy} in future work, aiming to enhance the resilience of LVLM-guided intelligent  XR cognitive assistant system against such vulnerabilities.
+
+% \section{Limitations and Future Work}
+% Our proposed CAT has a few limitations. First, the user study involved a relatively small and demographically limited participant pool with imbalanced gender representation. Second, the attack was evaluated within a fixed 60-second window; exploring varied time frames remains important future work. Third, our findings are based on a specific hardware-software setup, which may not generalize to other platforms or future technologies. Future work will explore the attack across varied XR platforms, settings, and interactive tasks discussed in \textit{the supplementary material} with more prolonged exposure durations~\cite{srinidhi2024xair, behravan2025generative, qu2024looking}. Moreover, it would be interesting to investigate possible mitigation strategies for the proposed CAT presented in Section~\ref{sec:defense-strategy} in future work, aiming to enhance the resilience of LVLM-guided intelligent  XR cognitive assistant system against such vulnerabilities.
+
+
+\section{Conclusion}
+In this work, we proposed a stealthy CAT that targets LVLM-guided intelligent XR cognitive assistants by subtly manipulating systems' perception to degrade user task performance. Specifically, this Trojan was triggered only by the attacker's predefined visual object (e.g., a white cup), increasing cognitive load and disrupting the XR experience's immersive flow. We demonstrated the effectiveness of this attack with an LVLM-guided intelligent XR cognitive assistant, namely \textit{CogXR}, for two XR task categories: spatial reasoning task (Rubik’s Cube solving) and procedural task (cooking) on the Magic Leap 2 XR headset. Once triggered, the proposed Trojan subtly alters visual input, misleading the LVLM's decision-making during Rubik's Cube solving and cooking tasks, leading to longer task times, higher cognitive load, and disrupted immersive flow. Our user study revealed that the proposed CAT increases task completion time by an average of 43\% for the Rubik's Cube solving and 25.2\% for cooking, compared to non-attack conditions, leading to higher cognitive load and reduced overall performance. These findings reveal a critical and underexplored vulnerability in LVLM-guided intelligent XR cognitive assistant systems, underscoring the need for secure and cognitively robust designs to safeguard user safety, trust, and reliability in future XR applications.
+
+%In this work, we proposed a stealthy CAT that targets LVLM-guided intelligent XR cognitive assistants by subtly manipulating systems' perception to degrade user task performance. Specifically, this Trojan entered the application through a compromised third-party library and was triggered only by the attacker's predefined visual object (e.g., a white cup), increasing cognitive load and disrupting the XR experience's immersive flow. We demonstrated the effectiveness of this attack with an LVLM-guided intelligent XR cognitive assistant, namely \textit{CogXR}, for two XR task categories: spatial reasoning task (Rubik’s Cube solving) and procedural task (cooking) on the Magic Leap 2 XR headset. Once triggered, the proposed Trojan subtly alters visual input, misleading the LVLM's decision-making during Rubik's Cube solving and cooking tasks, leading to longer task times, higher cognitive load, and disrupted immersive flow. Our user study revealed that the proposed CAT increases task completion time by an average of 43\% for the Rubik's Cube solving and 25.2\% for cooking, compared to non-attack conditions, leading to higher cognitive load and reduced overall performance. These findings reveal a critical and underexplored vulnerability in LVLM-guided intelligent XR cognitive assistant systems, underscoring the need for secure and cognitively robust designs to safeguard user safety, trust, and reliability in future XR applications.
+
+%\section{LLM Usage Considerations}
+%In this study, we use a pre-trained large vision–language model (LVLM), specifically GPT-4o, strictly as a computational perception module to develop our CogXR system (case study used in this paper) for multimodal understanding and instruction generation to support cognitive task completion in extended reality (XR) and to evaluate its behavior under our proposed cognitive attack Trojan. It is important to note that our proposed cognitive attack Trojan does not target or modify the LVLM model itself. Instead, it operates entirely in the visual input space, introducing object-level visual alterations designed to exploit the LVLM’s processing and thereby induce erroneous task instructions. Furthermore, we do not use any large language models (LLMs) for idea generation, manuscript writing, literature review, or any other form of scientific content creation. All system logic, threat modeling, task flow design, experiments, and analyses were fully developed by the authors. We treat GPT-4o as a closed-source, API-based, inference-only LVLM and limit queries to task-critical frames, which is necessary to support our methodology and thereby reduce computational overhead and the environmental footprint. Finally, no additional user-identifying data is collected to train or fine-tune the LVLM in our study.
+
+
+
+%% ---- Acknowledgments ----
+%% None were present in the source submission. For the camera-ready
+%% (non-anonymous) version, add them with the acks environment:
+% \begin{acks}
+% ...
+% \end{acks}
+
+%% ---- Bibliography ----
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{template}
+
+%% ---- Appendix (empty in the source submission) ----
+\appendix
+
+\end{document}
